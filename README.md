@@ -1,4 +1,4 @@
-# norara
+# 41ways의 레드버튼
 
 만든 게임·장난감 모음 페이지. https://41ways.github.io/norara/
 
