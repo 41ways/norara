@@ -83,8 +83,10 @@ h2.sec{
 footer{
   margin-top:44px; padding-top:20px; border-top:1px solid var(--line);
   color:var(--faint); font-size:13px;
+  display:flex; flex-wrap:wrap; gap:6px 16px; align-items:baseline;
 }
 footer a{color:var(--dim)}
+.disclaimer{margin-left:auto;font-size:11.5px;color:var(--faint);opacity:.75;text-align:right}
 </style>
 </head>
 <body>
@@ -167,7 +169,8 @@ footer a{color:var(--dim)}
 </div>
 
 <footer>
-  코드는 <a href="https://github.com/41ways">github.com/41ways</a>.
+  <span>코드는 <a href="https://github.com/41ways">github.com/41ways</a>.</span>
+  <span class="disclaimer">개인적으로 만든 것들이며, 배포나 상업적 목적이 아닙니다.</span>
 </footer>
 
 </div>
