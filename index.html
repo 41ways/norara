@@ -222,5 +222,47 @@ footer a{color:var(--dim)}
   });
 })();
 </script>
+
+<!-- 카드 높이 통일 — 가장 큰 카드에 나머지를 맞춘다.
+     격자 높이가 정해져 있지 않아 CSS(1fr)만으로는 행끼리 안 맞는다.
+     한 열로 접히는 좁은 화면에서는 여백만 생기므로 풀어준다. -->
+<script>
+(function () {
+  var cards = [].slice.call(document.querySelectorAll(".card"));
+  var list = document.querySelector(".list");
+  if (!cards.length || !list) return;
+
+  function even() {
+    cards.forEach(function (c) { c.style.minHeight = ""; });
+    if (getComputedStyle(list).gridTemplateColumns.split(" ").length <= 1) return;
+    var tallest = 0;
+    cards.forEach(function (c) {
+      tallest = Math.max(tallest, c.getBoundingClientRect().height);
+    });
+    cards.forEach(function (c) { c.style.minHeight = tallest + "px"; });
+  }
+
+  // 폭이 바뀔 때만 다시 계산한다.
+  // 높이 변화에도 반응하면 min-height 를 스스로 다시 트리거해 무한히 돈다.
+  var lastW = 0;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function (entries) {
+      var w = Math.round(entries[0].contentRect.width);
+      if (w === lastW) return;
+      lastW = w;
+      even();
+    }).observe(list);
+  } else {
+    var timer;
+    addEventListener("resize", function () {
+      clearTimeout(timer);
+      timer = setTimeout(even, 120);
+    });
+  }
+
+  even();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(even);
+})();
+</script>
 </body>
 </html>
