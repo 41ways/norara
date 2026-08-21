@@ -30,7 +30,7 @@ body{
   line-height:1.62; letter-spacing:-.01em;
   padding:clamp(28px,7vw,72px) clamp(18px,5vw,32px) 72px;
 }
-.wrap{max-width:760px;margin:0 auto}
+.wrap{max-width:1040px;margin:0 auto}
 
 header{margin-bottom:clamp(28px,6vw,44px)}
 h1{
@@ -38,9 +38,9 @@ h1{
   letter-spacing:-.03em;
 }
 h1 .dot{color:var(--accent)}
-header p{margin:0;color:var(--dim);font-size:15px;max-width:46em}
+header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 
-.list{display:flex;flex-direction:column;gap:14px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 
 .card{
   background:var(--panel); border:1px solid var(--line); border-radius:14px;
@@ -58,7 +58,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:46em}
 }
 .desc{margin:0;color:var(--dim);font-size:14.5px}
 
-.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:2px}
 a.btn{
   display:inline-block; text-decoration:none; font-size:13.5px; font-weight:600;
   border-radius:9px; padding:7px 14px; border:1px solid var(--line);
