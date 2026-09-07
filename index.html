@@ -107,7 +107,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
   box-shadow:0 3px 8px -3px var(--gc);
 }
 /* 사진 아이콘 — 가장자리 페이드는 PNG 알파에 구워 넣어서 배경색이 뭐든 자연스럽게 녹는다 */
-.glyph.img{width:54px;height:54px;background:none;box-shadow:none;border-radius:0;overflow:visible}
+.glyph.img{width:68px;height:68px;margin:-8px 0;background:none;box-shadow:none;border-radius:0;overflow:visible}
 .glyph.img img{width:100%;height:100%;display:block;object-fit:cover}
 .name{font-size:19px;font-weight:700;letter-spacing:-.02em}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
@@ -138,13 +138,83 @@ footer{
 }
 footer a{color:var(--dim)}
 .disclaimer{margin-left:auto;font-size:11.5px;color:var(--faint);opacity:.75;text-align:right}
+
+/* ══ 꾸밈 ══ */
+body{
+  background-image:
+    radial-gradient(rgba(0,0,0,.045) 1px, transparent 1.2px),
+    radial-gradient(700px 320px at 12% -8%, rgba(216,51,43,.12), transparent 60%),
+    radial-gradient(600px 300px at 92% 4%, rgba(180,87,31,.12), transparent 60%);
+  background-size:22px 22px, auto, auto;
+}
+@media (prefers-color-scheme:dark){ body{background-image:
+    radial-gradient(rgba(255,255,255,.045) 1px, transparent 1.2px),
+    radial-gradient(700px 320px at 12% -8%, rgba(216,51,43,.16), transparent 60%),
+    radial-gradient(600px 300px at 92% 4%, rgba(180,87,31,.12), transparent 60%)} }
+.wrap{position:relative;z-index:1}
+/* 뒤에서 천천히 떠다니는 카드 실루엣 */
+.bgcards{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bgcards i{
+  position:absolute;width:64px;height:90px;border-radius:9px;
+  border:2px solid var(--line);background:var(--panel);opacity:.55;
+  animation:drift var(--t,26s) ease-in-out infinite alternate;
+}
+.bgcards i:nth-child(1){left:6%;top:18%;--t:24s;rotate:-14deg}
+.bgcards i:nth-child(2){left:16%;top:72%;--t:31s;rotate:9deg;width:50px;height:70px}
+.bgcards i:nth-child(3){left:80%;top:12%;--t:28s;rotate:12deg}
+.bgcards i:nth-child(4){left:90%;top:64%;--t:22s;rotate:-7deg;width:54px;height:76px}
+.bgcards i:nth-child(5){left:46%;top:88%;--t:34s;rotate:4deg}
+.bgcards i:nth-child(6){left:60%;top:-4%;--t:27s;rotate:-20deg;width:46px;height:64px}
+@keyframes drift{from{translate:0 0}to{translate:14px -26px}}
+@media (prefers-reduced-motion:reduce){.bgcards i{animation:none}}
+@media (max-width:640px){.bgcards{display:none}}
+
+/* 레드버튼 받침·라벨 */
+.rb{display:flex;flex-direction:column;align-items:center;gap:12px}
+.rb-label{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint);padding-left:.32em}
+.redbtn:hover{filter:brightness(1.1) drop-shadow(0 0 14px rgba(216,51,43,.45))}
+
+/* 탭 아이콘 */
+.tab::before{font-size:13px;opacity:.9}
+.tab[data-cat="전체"]::before{content:"✦"}
+.tab[data-cat="멀티"]::before{content:"👥"}
+.tab[data-cat="싱글"]::before{content:"🧍"}
+.tab[data-cat="보드게임"]::before{content:"🎲"}
+.tab[data-cat="로그라이크"]::before{content:"🗝"}
+.tab[data-cat="장난감"]::before{content:"🔧"}
+
+/* 묶음 제목에 선 */
+h2.sec{display:flex;align-items:center;gap:12px}
+h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* 카드: 게임 색으로 옅게 물들이고, 큰 글리프 워터마크, 리본 */
+.card{background:linear-gradient(180deg, color-mix(in srgb, var(--gc) 8%, var(--panel)), var(--panel) 52%)}
+.card::after{
+  content:attr(data-glyph);position:absolute;right:-10px;bottom:-22px;
+  font-size:96px;line-height:1;opacity:.07;pointer-events:none;
+  filter:grayscale(1);transform:rotate(-12deg);transition:transform .25s, opacity .25s;
+}
+.card:hover::after{transform:rotate(-4deg) scale(1.08);opacity:.12}
+.card:hover .glyph{rotate:-6deg;scale:1.08}
+.glyph{transition:rotate .2s, scale .2s}
+.card:hover::before{height:6px}
+.card::before{transition:height .16s}
+.new{
+  font-size:10px;font-weight:800;letter-spacing:.12em;color:#fff;background:var(--red);
+  border-radius:999px;padding:2px 8px;line-height:1.5;
+  animation:blink 2.4s ease-in-out infinite;
+}
+@keyframes blink{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+a.btn.play::before{content:"▶";font-size:10px;margin-right:6px;opacity:.9}
 </style>
 </head>
 <body>
+<div class="bgcards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <div class="wrap">
 
 <header>
-  <button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"></button>
+  <div class="rb"><button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"></button><span class="rb-label">random</span></div>
   <div class="hgroup">
     <h1>41ways의 <span class="dot">레드버튼</span></h1>
     <p>만든 게임과 장난감. 대부분 브라우저에서 바로 열림. 빨간 버튼을 누르면 랜덤으로 시작.</p>
@@ -164,7 +234,7 @@ footer a{color:var(--dim)}
 <h2 class="sec" data-sec>바로 하기</h2>
 <div class="list" data-sec>
 
-  <article data-cat="싱글" style="--gc:#1c1f2b;--gc2:#c9a961" class="card">
+  <article data-glyph="🕯" data-cat="싱글" style="--gc:#1c1f2b;--gc2:#c9a961" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🕯</span>
       <span class="name">무고</span>
@@ -178,7 +248,7 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="멀티 보드게임" style="--gc:#2f4f7a;--gc2:#7d93b3" class="card">
+  <article data-glyph="🧩" data-cat="멀티 보드게임" style="--gc:#2f4f7a;--gc2:#7d93b3" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🧩</span>
       <span class="name">다빈치코드</span>
@@ -191,7 +261,7 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="싱글 로그라이크" style="--gc:#2a2924;--gc2:#c2453a" class="card">
+  <article data-glyph="🃏" data-cat="싱글 로그라이크" style="--gc:#2a2924;--gc2:#c2453a" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🃏</span>
       <span class="name">한 줄</span>
@@ -204,7 +274,7 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="싱글 로그라이크" style="--gc:#3b2e5a;--gc2:#8d6cff" class="card">
+  <article data-glyph="🚀" data-cat="싱글 로그라이크" style="--gc:#3b2e5a;--gc2:#8d6cff" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🚀</span>
       <span class="name">우주탐험</span>
@@ -217,10 +287,10 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="멀티 보드게임" style="--gc:#d9822b;--gc2:#f2c85b" class="card">
+  <article data-glyph="🔔" data-cat="멀티 보드게임" style="--gc:#d9822b;--gc2:#f2c85b" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🔔</span>
-      <span class="name">할리갈리 — 타자 대전</span>
+      <span class="name">할리갈리</span>
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–6인</span><span class="tag">온라인</span></span>
     </div>
     <p class="desc">종을 치는 대신 과일 이름을 먼저 타자로 치는 사람이 판을 가져감.</p>
@@ -231,10 +301,10 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="멀티 보드게임" style="--gc:#2f6b5e;--gc2:#e0862f" class="card">
+  <article data-glyph="🤖" data-cat="멀티 보드게임" style="--gc:#2f6b5e;--gc2:#e0862f" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🤖</span>
-      <span class="name">로보77</span>
+      <span class="name">로보77</span><span class="new">NEW</span>
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–6인</span><span class="tag">온라인</span></span>
     </div>
     <p class="desc">카드를 한 장씩 내면서 합을 쌓다가, 77을 넘기거나 11의 배수를 밟으면 하트가 깎임.</p>
@@ -245,7 +315,7 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="멀티 보드게임" style="--gc:#4f7a3a;--gc2:#c98a3c" class="card">
+  <article data-glyph="🌾" data-cat="멀티 보드게임" style="--gc:#4f7a3a;--gc2:#c98a3c" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🌾</span>
       <span class="name">카탄</span>
@@ -259,7 +329,7 @@ footer a{color:var(--dim)}
     </div>
   </article>
 
-  <article data-cat="멀티 보드게임" style="--gc:#5a3f7a;--gc2:#e0b64a" class="card">
+  <article data-glyph="💎" data-cat="멀티 보드게임" style="--gc:#5a3f7a;--gc2:#e0b64a" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">💎</span>
       <span class="name">스플렌더</span>
