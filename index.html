@@ -141,10 +141,10 @@ footer a{color:var(--dim)}
 <div class="wrap">
 
 <header>
-  <button class="redbtn" id="redbtn" aria-label="레드버튼 — 아무 게임이나 하나 열기" title="아무거나 하나"></button>
+  <button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"></button>
   <div class="hgroup">
     <h1>41ways의 <span class="dot">레드버튼</span></h1>
-    <p>만든 게임과 장난감. 대부분 브라우저에서 바로 열림. 빨간 버튼을 누르면 아무거나 하나 열림.</p>
+    <p>만든 게임과 장난감. 대부분 브라우저에서 바로 열림. 빨간 버튼을 누르면 랜덤으로 시작.</p>
     <p class="count" id="count"></p>
   </div>
 </header>
@@ -342,7 +342,7 @@ footer a{color:var(--dim)}
   apply(fromHash(), false);
   addEventListener("hashchange", function () { apply(fromHash(), false); });
 
-  // 레드버튼 — 지금 보이는 것 중 아무 게임이나 하나 연다
+  // 레드버튼 — 지금 보이는 것 중 하나를 랜덤으로 연다
   var rb = document.getElementById("redbtn");
   rb.addEventListener("click", function () {
     rb.classList.add("press");
