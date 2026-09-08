@@ -169,7 +169,7 @@ h2.sec{display:flex;align-items:center;gap:12px}
 h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
 
 /* 카드: 게임 색으로 옅게 물들이고, 큰 글리프 워터마크, 리본 */
-.card:hover .glyph{rotate:-6deg;scale:1.08}
+.card:hover .glyph{rotate:-6deg;scale:1.08;box-shadow:0 6px 14px -6px var(--gc)}
 .glyph{transition:rotate .2s, scale .2s}
 .new{
   font-size:10px;font-weight:800;letter-spacing:.12em;color:#fff;background:var(--red);
@@ -179,6 +179,54 @@ h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
 @keyframes blink{50%{opacity:.55}}
 @media (prefers-reduced-motion:reduce){.new{animation:none}}
 a.btn.play::before{content:"▶";font-size:10px;margin-right:6px;opacity:.9}
+
+/* ── 카드 워터마크 ── 평소엔 종이에 눌린 자국처럼 옅고, 마우스를 올리면 살아난다 */
+.card::after{
+  content:attr(data-glyph);position:absolute;right:-10px;bottom:-22px;
+  font-size:96px;line-height:1;pointer-events:none;
+  filter:grayscale(1);opacity:.06;transform:rotate(-12deg);
+  transition:transform .25s cubic-bezier(.2,.8,.3,1), opacity .25s;
+}
+.card:hover::after{transform:rotate(-4deg) scale(1.08);opacity:.16}
+/* 사진 아이콘 카드는 글자가 없으니 그 그림을 그대로 워터마크로 쓴다 */
+.card.photo::after{
+  content:'';width:150px;height:150px;right:-26px;bottom:-34px;
+  background:url("assets/kkang.png") center/contain no-repeat;
+}
+@media (prefers-color-scheme:dark){
+  .card::after{opacity:.09}
+  .card:hover::after{opacity:.2}
+}
+@media (prefers-reduced-motion:reduce){
+  .card::after{transition:none}
+  .card:hover::after{transform:rotate(-12deg)}
+}
+
+/* ── 마우스를 올린 카드는 테두리도 그 게임 색을 옅게 띤다 ── */
+.card{transition:transform .16s, box-shadow .16s, border-color .16s}
+.card:hover{border-color:color-mix(in srgb, var(--gc) 32%, var(--line))}
+
+/* ── 묶음 제목 앞의 작은 마름모 ── */
+h2.sec::before{content:'';width:6px;height:6px;flex:none;background:var(--red);rotate:45deg;border-radius:1px}
+
+/* ── 플레이 버튼의 삼각형이 눌리기 전에 살짝 나아간다 ── */
+a.btn.play::before{display:inline-block;transition:transform .16s}
+a.btn.play:hover::before{transform:translateX(3px)}
+
+/* ── 카드가 하나씩 차례로 올라온다 ── */
+.list .card.in:nth-child(2){animation-delay:.03s}
+.list .card.in:nth-child(3){animation-delay:.06s}
+.list .card.in:nth-child(4){animation-delay:.09s}
+.list .card.in:nth-child(5){animation-delay:.12s}
+.list .card.in:nth-child(6){animation-delay:.15s}
+.list .card.in:nth-child(7){animation-delay:.18s}
+.list .card.in:nth-child(8){animation-delay:.21s}
+.list .card.in:nth-child(n+9){animation-delay:.24s}
+
+/* ── 키보드로 옮겨 다닐 때 어디에 있는지 보이게 ── */
+a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
+  outline:2px solid var(--red);outline-offset:3px;border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -318,7 +366,7 @@ a.btn.play::before{content:"▶";font-size:10px;margin-right:6px;opacity:.9}
 <h2 class="sec" data-sec>맥에서 돌리는 것</h2>
 <div class="list" data-sec>
 
-  <article data-cat="장난감" style="--gc:#6f6f6f;--gc2:#f0902e" class="card soon">
+  <article data-cat="장난감" style="--gc:#6f6f6f;--gc2:#f0902e" class="card soon photo">
     <div class="head">
       <span class="glyph img" aria-hidden="true"><img src="assets/kkang.png" alt="" width="256" height="256"></span>
       <span class="name">깡! 깡통 괴롭히기</span>
