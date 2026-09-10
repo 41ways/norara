@@ -170,6 +170,9 @@ h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
 
 /* 카드: 게임 색으로 옅게 물들이고, 큰 글리프 워터마크, 리본 */
 .card:hover .glyph{rotate:-6deg;scale:1.08;box-shadow:0 6px 14px -6px var(--gc)}
+/* 사진 아이콘은 가장자리가 둥글게 사라지는 그림이라, 네모난 box-shadow 를 주면
+   그림 뒤로 기울어진 네모 테두리가 드러난다. 투명도 모양을 따라가는 drop-shadow 로 대신한다. */
+.card:hover .glyph.img{box-shadow:none;filter:drop-shadow(0 4px 7px color-mix(in srgb,var(--gc) 55%,transparent))}
 .glyph{transition:rotate .2s, scale .2s}
 .new{
   font-size:10px;font-weight:800;letter-spacing:.12em;color:#fff;background:var(--red);
