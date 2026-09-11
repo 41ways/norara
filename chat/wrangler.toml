@@ -1,0 +1,15 @@
+# norara 허브 채팅 — Cloudflare Workers 무료 플랜
+# 무료 플랜에서는 SQLite 저장소를 쓰는 Durable Object 만 쓸 수 있다(new_sqlite_classes).
+# 결제 수단을 등록하지 않았으므로 한도를 넘어도 요금이 붙지 않고 그날 요청만 거절된다.
+name = "norara-chat"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+workers_dev = true
+
+[[durable_objects.bindings]]
+name = "HUB"
+class_name = "HubChat"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["HubChat"]

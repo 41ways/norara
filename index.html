@@ -253,7 +253,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--lift);
 }
 .chat[hidden],.chat-btn[hidden],.chat-dot[hidden],.chat-btn .on[hidden]{display:none}
-.chat-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+.chat-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--line);margin:0;flex-wrap:nowrap}
 .chat-head b{font-size:14px}
 .chat-sub{font-size:11.5px;color:var(--faint)}
 .chat-x{margin-left:auto;border:0;background:none;color:var(--faint);font-size:15px;cursor:pointer;padding:2px 4px;line-height:1}
@@ -375,9 +375,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–6인</span><span class="tag">온라인</span></span>
     </div>
     <p class="desc">종을 치는 대신 과일 이름을 먼저 타자로 치는 사람이 판을 가져감.</p>
-    <p class="note">서버가 잠들어 있으면 첫 접속이 30초쯤 걸림.</p>
     <div class="acts">
-      <a class="btn play" href="https://halligalli-f9rk.onrender.com/" target="_blank" rel="noopener noreferrer" data-ev="halligalli-플레이">플레이</a>
+      <a class="btn play" href="https://halligalli.41ways.workers.dev/" target="_blank" rel="noopener noreferrer" data-ev="halligalli-플레이">플레이</a>
       <a class="btn" href="https://github.com/41ways/halligalli-fanproj" data-ev="halligalli-코드">코드</a>
     </div>
   </article>
@@ -389,9 +388,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–6인</span><span class="tag">온라인</span></span>
     </div>
     <p class="desc">카드를 한 장씩 내면서 합을 쌓다가, 77을 넘기거나 11의 배수를 밟으면 하트가 깎임.</p>
-    <p class="note">서버가 잠들어 있으면 첫 접속이 30초쯤 걸림.</p>
     <div class="acts">
-      <a class="btn play" href="https://robo77.onrender.com/" target="_blank" rel="noopener noreferrer" data-ev="robo77-플레이">플레이</a>
+      <a class="btn play" href="https://robo77.41ways.workers.dev/" target="_blank" rel="noopener noreferrer" data-ev="robo77-플레이">플레이</a>
       <a class="btn" href="https://github.com/41ways/robo77-fanproj" data-ev="robo77-코드">코드</a>
     </div>
   </article>
@@ -402,8 +400,6 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
       <span class="name">카탄</span>
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–4인</span><span class="tag">온라인</span></span>
     </div>
-    <p class="desc">주사위가 자원을 나눠주고, 자원으로 도로·마을·도시를 지음. 자기 차례에 10점을 먼저 넘기면 이김.</p>
-    <p class="note"><code>도시와 기사</code> 확장이 같이 들어 있음 — 상품으로 도시를 개발해 수도를 세우고, 기사로 야만족을 막으며 13점을 노림. 판 종류에서 골라서 시작. 확장은 아직 다듬는 중이라 미완인 데가 있음.</p>
     <div class="acts">
       <a class="btn play" href="https://41ways.github.io/catan-fanproj/" target="_blank" rel="noopener noreferrer" data-ev="catan-플레이">플레이</a>
       <a class="btn" href="https://github.com/41ways/catan-fanproj" data-ev="catan-코드">코드</a>
@@ -508,7 +504,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   tabs.forEach(function (t) { t.addEventListener("click", function () { apply(t.dataset.cat, true); }); });
 
   function fromHash() {
-    var h = decodeURIComponent(location.hash.replace(/^#/, ""));
+    var h = location.hash.replace(/^#/, "");
+    try { h = decodeURIComponent(h); } catch (e) { h = ""; }   // #% 같은 깨진 해시에서 멈추지 않게
     return tabs.some(function (t) { return t.dataset.cat === h; }) ? h : "전체";
   }
   apply(fromHash(), false);
@@ -594,13 +591,15 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
 </script>
 
 <!-- 같이 할 사람 찾기 — 채팅
-     서버는 로보77 렌더 서버의 /hub 경로(게임 방과는 아무것도 나누지 않음).
-     무료 서버의 켜진 시간을 아끼려고, 탭을 뒤로 5분 넘게 두면 연결을 끊었다가 돌아오면 다시 붙는다. -->
+     서버는 Cloudflare Workers 무료 플랜의 norara-chat (저장소 chat/ 폴더). 게임 방과는 아무것도 나누지 않는다.
+     말이 없는 동안 서버는 잠들어 있고, 50초마다 보내는 ping 은 서버를 깨우지 않고 가장자리에서 pong 으로 답한다.
+     그래도 뒤로 5분 넘게 둔 탭은 연결을 놓았다가 돌아오면 다시 붙는다 — 하루 요청 한도를 아끼려고. -->
 <script>
 (function () {
   var CHAT_URL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
-    ? "ws://localhost:8790/hub" : "wss://robo77.onrender.com/hub";
+    ? "ws://localhost:8798/hub" : "wss://norara-chat.41ways.workers.dev/hub";
   var PARK_MS = 5 * 60 * 1000;
+  var PING_MS = 50 * 1000;
   var WAIT = [2, 4, 8, 15, 30];                     // 다시 붙는 간격(초)
   var $ = function (id) { return document.getElementById(id); };
   var store = {
@@ -668,13 +667,13 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   }
 
   /* 연결 */
-  var ws = null, tries = 0, retryT = 0, parkT = 0, flashT = 0, parked = false, everOpen = false, pending = "";
+  var ws = null, tries = 0, retryT = 0, parkT = 0, flashT = 0, pingT = 0, parked = false, everOpen = false, pending = "";
   function state(t) {
     $("chatState").textContent = t || "";
     $("chatSend").disabled = !(ws && ws.readyState === 1);
   }
   function waitingText() {
-    return everOpen ? "연결이 끊겨서 다시 붙는 중" : "연결 중… 서버가 자고 있으면 30초쯤 걸림";
+    return everOpen ? "연결이 끊겨서 다시 붙는 중" : "연결 중…";
   }
   function later() {
     clearTimeout(retryT);
@@ -692,6 +691,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
       tries = 0; everOpen = true;
       me.send(JSON.stringify({ t: "hello", key: key }));
       state("");
+      clearInterval(pingT);
+      pingT = setInterval(function () { if (ws === me) me.send("ping"); }, PING_MS);
     };
     me.onmessage = function (e) {
       var m;
@@ -702,7 +703,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
         if (!m.list.length) showEmpty();
         setOnline(m.online);
       } else if (m.t === "msg") {
-        if (m.m.mine) pending = "";
+        if (m.m.mine && m.m.text === pending) pending = "";
         add(m.m);
       } else if (m.t === "online") {
         setOnline(m.n);
@@ -716,9 +717,14 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     };
     me.onclose = function () {
       if (ws !== me) return;
+      clearInterval(pingT);
       ws = null;
       setOnline(0);
-      if (parked) { state(""); return; }
+      if (parked) {
+        state("");
+        if (!document.hidden) { tries = 0; connect(); }   // 닫히는 사이에 탭으로 돌아온 경우
+        return;
+      }
       state(waitingText());
       later();
     };
@@ -766,6 +772,12 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   showEmpty();
   state("");
   setTimeout(connect, 1200);                        // 페이지가 먼저 뜨고 나서 붙는다
+  // 뒤쪽 탭으로 열린 경우 — 한 번도 보이지 않으면 visibilitychange 가 안 와서 놓기가 시작되지 않는다
+  if (document.hidden) {
+    parkT = setTimeout(function () {
+      if (document.hidden && ws) { parked = true; ws.close(1000); }
+    }, PARK_MS);
+  }
 })();
 </script>
 </body>

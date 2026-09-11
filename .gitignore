@@ -1,1 +1,4 @@
 .DS_Store
+
+# wrangler dev 가 남기는 로컬 상태 (Durable Object 저장소 등)
+.wrangler/
