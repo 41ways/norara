@@ -5,13 +5,15 @@
  * 연결은 WebSocket Hibernation 으로 받는다. 말이 오가지 않는 동안에는 객체가 잠들어서
  * 켜 둔 탭이 많아도 무료 한도(하루 켜진 시간)를 거의 쓰지 않는다.
  *
- * 막 들어온 사람이 조금 전의 "로보77 같이 하실 분?" 을 볼 수 있게 최근 말 몇 개를 저장소에 둔다.
- * 잠들면 메모리가 비워지므로 메모리만으로는 이 일을 못 한다. 6시간이 지난 말은 지운다.
+ * 막 들어온 사람이 오늘 오간 "로보77 같이 하실 분?" 을 볼 수 있게 말을 저장소에 둔다.
+ * 잠들면 메모리가 비워지므로 메모리만으로는 이 일을 못 한다. 한국 시간 자정이 지나면 전날 말은 지운다.
  */
 import { DurableObject } from 'cloudflare:workers';
 
-const KEEP = 40;                    // 새로 들어온 사람에게 보여 줄 최근 말 수
-const KEEP_MS = 6 * 60 * 60 * 1000; // 이보다 오래된 말은 지운다
+const KEEP = 150;                   // 하루치로 들고 있을 말 수 (넘치면 오래된 것부터)
+const KST = 9 * 60 * 60 * 1000;
+/** 한국 시간 날짜 — 자정이 지나면 날짜가 바뀌어 전날 말이 지워진다 */
+const dayOf = t => new Date(t + KST).toISOString().slice(0, 10);
 const GAP_MS = 800;                 // 한 사람이 연달아 칠 수 있는 간격
 const MAX_TEXT = 200;
 const MAX_NAME = 12;
@@ -98,9 +100,9 @@ export class HubChat extends DurableObject {
 
   async recent() {
     if (!this.log) this.log = (await this.ctx.storage.get('log')) || [];
-    const cut = Date.now() - KEEP_MS;
+    const today = dayOf(Date.now());
     const before = this.log.length;
-    this.log = this.log.filter(m => m.at >= cut);
+    this.log = this.log.filter(m => dayOf(m.at) === today);   // 오늘(한국 시간) 말만
     if (this.log.length !== before) await this.ctx.storage.put('log', this.log);
     return this.log;
   }
