@@ -663,7 +663,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
   }
   function showEmpty() {
-    $("chatLog").innerHTML = '<p class="chat-empty">아직 아무 말도 없음<br>먼저 한마디 남겨두면 됨</p>';
+    $("chatLog").innerHTML = '<p class="chat-empty">아직 아무 말도 없음<br>먼저 한마디 남겨두면 됨 · 오늘 남긴 말은 자정까지 보임</p>';
   }
   function add(m) {
     var log = $("chatLog");
@@ -797,6 +797,13 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   showEmpty();
   state("");
   setTimeout(connect, 1200);                        // 페이지가 먼저 뜨고 나서 붙는다
+
+  // 한국 시간 자정이 되면 화면에 남은 전날 말도 비운다 (서버는 자정이 지나면 전날 말을 지운다)
+  (function atMidnight() {
+    var now = Date.now(), kst = 9 * 3600 * 1000, day = 24 * 3600 * 1000;
+    var next = Math.floor((now + kst) / day + 1) * day - kst;
+    setTimeout(function () { showEmpty(); lastAt = 0; $("chatDot").hidden = true; atMidnight(); }, next - now + 1000);
+  })();
   // 뒤쪽 탭으로 열린 경우 — 한 번도 보이지 않으면 visibilitychange 가 안 와서 놓기가 시작되지 않는다
   if (document.hidden) {
     parkT = setTimeout(function () {
