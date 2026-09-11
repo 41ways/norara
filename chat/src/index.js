@@ -17,6 +17,8 @@ const MAX_TEXT = 200;
 const MAX_NAME = 12;
 const MAX_PER_IP = 8;               // 한 곳에서 여는 연결 수 — 탭 몇 개는 되고 대량 연결은 막힌다
 const IP_GAP_MS = 400;              // 한 곳(주소)에서 나오는 말 사이 간격 — 연결을 새로 열어도 초기화되지 않게
+const SLOW_STRIKES = 6;             // 너무 빨리 치는 걸 이만큼 되풀이하면 연결을 끊는다 — 도배가 하루 한도를 태우지 않게
+const HELLO_MS = 15_000;            // 인사 없이 자리만 차지하는 연결은 이만큼 뒤 정리한다
 const MAX_CLIENTS = 300;
 
 // 허브 페이지와 로컬 개발에서만 받는다. 남의 페이지가 이 채팅을 퍼 가서 쓰지 못하게.
@@ -29,7 +31,8 @@ const ORIGINS = [
 /** 제어 문자·방향 뒤집기 문자와 겹친 공백을 걷어내고 길이를 자른다 */
 export function clean(s, n) {
   return String(s == null ? '' : s)
-    .replace(/[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, ' ')
+    // 제어 문자, 방향 뒤집기, 폭 없는 글자, 빈칸처럼 보이는 채움 글자(ㅤ U+3164 · 점자 빈칸 · 한글 채움 자모)
+    .replace(/[\u0000-\u001f\u007f\u00ad\u115f\u1160\u200b-\u200f\u202a-\u202e\u2060-\u2069\u2800\u3164\ufeff\uffa0]/g, ' ')
     .replace(/\s+/g, ' ').trim().slice(0, n);
 }
 
@@ -61,14 +64,19 @@ export class HubChat extends DurableObject {
 
   async fetch(req) {
     const ip = placeOf(req.headers.get('CF-Connecting-IP') || '?');
-    const socks = this.ctx.getWebSockets();
+    const now0 = Date.now();
+    for (const ws of this.ctx.getWebSockets()) {
+      const m = this.meta(ws);
+      if (!m.greeted && now0 - (m.at || now0) > HELLO_MS) { try { ws.close(4002, 'no hello'); } catch (_) {} }
+    }
+    const socks = this.ctx.getWebSockets().filter(ws => { try { return ws.readyState === 1; } catch (_) { return false; } });
     if (socks.length >= MAX_CLIENTS) return new Response('busy', { status: 503 });
     if (socks.filter(ws => this.meta(ws).ip === ip).length >= MAX_PER_IP) {
       return new Response('too many', { status: 429 });
     }
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ ip, key: null, greeted: false, last: 0 });
+    server.serializeAttachment({ ip, key: null, greeted: false, last: 0, at: now0, strikes: 0 });
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -124,15 +132,20 @@ export class HubChat extends DurableObject {
       if (!me.greeted) return;
       const now = Date.now();
       if (now - (me.last || 0) < GAP_MS || now - (this.lastByPlace.get(me.ip) || 0) < IP_GAP_MS) {
+        me.strikes = (me.strikes || 0) + 1;
+        ws.serializeAttachment(me);
+        if (me.strikes >= SLOW_STRIKES) { try { ws.close(4003, 'too fast'); } catch (_) {} return; }
         this.send(ws, { t: 'slow' });
         return;
       }
+      me.strikes = 0;
       const text = clean(msg.text, MAX_TEXT);
       if (!text) return;
       me.last = now;
       ws.serializeAttachment(me);
       this.lastByPlace.set(me.ip, now);
-      if (this.lastByPlace.size > 2000) this.lastByPlace.clear();
+      // 넘치면 오래된 것만 치운다 — 통째로 비우면 그 순간 누구나 간격 제한을 벗어난다
+      if (this.lastByPlace.size > 2000) for (const [k, t] of this.lastByPlace) if (now - t > 10_000) this.lastByPlace.delete(k);
 
       const log = await this.recent();
       const id = ((log.length && log[log.length - 1].id) || 0) + 1;
