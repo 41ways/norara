@@ -633,6 +633,12 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
 
   /* 빨간 점 — 접어 둔 동안 남이 한 말이 있으면. 본 곳까지는 이 브라우저에 기억해 둔다. */
   var seenAt = +store.get("norara.chatSeen") || 0, lastAt = 0;
+  // 다른 탭에서 채팅을 열어 봤으면 이 탭의 빨간 점도 지운다
+  addEventListener("storage", function (e) {
+    if (e.key !== "norara.chatSeen") return;
+    seenAt = Math.max(seenAt, +e.newValue || 0);
+    if (lastAt <= seenAt) $("chatDot").hidden = true;
+  });
   function isOpen() { return !$("chat").hidden; }
   function markSeen() {
     if (lastAt > seenAt) { seenAt = lastAt; store.set("norara.chatSeen", String(seenAt)); }
@@ -716,11 +722,16 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
         flashT = setTimeout(function () { if (ws === me) state(""); }, 2500);
       }
     };
-    me.onclose = function () {
+    me.onclose = function (e) {
       if (ws !== me) return;
       clearInterval(pingT);
       ws = null;
+      // 끊기기 직전에 보낸 말이 돌아오지 않았으면 입력칸에 되돌려 둔다 — 다시 붙으면 그대로 보내면 된다
+      var box = $("chatText");
+      if (pending && !box.value) box.value = pending;
+      pending = "";
       setOnline(0);
+      if (e && e.code === 4003) { state("너무 빨리 쳐서 잠깐 끊겼음 — 곧 다시 붙음"); later(); return; }
       if (parked) {
         state("");
         if (!document.hidden) { tries = 0; connect(); }   // 닫히는 사이에 탭으로 돌아온 경우
