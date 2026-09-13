@@ -73,20 +73,21 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .count{font-size:12.5px;color:var(--faint);margin-top:6px}
 
 
-/* ── 탭 ── */
+/* ── 탭 — 글자만. 고른 것은 빨간 밑줄 ── */
 .tabs{
-  display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;
-  position:sticky;top:0;z-index:5;padding:10px 0 12px;
-  background:linear-gradient(var(--bg) 72%, transparent);
+  display:flex;gap:24px;flex-wrap:wrap;margin:0 0 30px;
+  position:sticky;top:0;z-index:5;padding:10px 0 0;
+  background:linear-gradient(var(--bg) 80%, transparent);border-bottom:1px solid var(--line);
 }
 .tab{
-  font:inherit;font-size:13.5px;font-weight:600;color:var(--dim);
-  background:var(--panel);border:1px solid var(--line);border-radius:8px;
-  padding:7px 13px;cursor:pointer;transition:.14s;display:inline-flex;align-items:center;gap:7px;
+  font:inherit;font-size:14.5px;font-weight:700;color:var(--dim);letter-spacing:-.01em;
+  background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;
+  padding:6px 0 11px;cursor:pointer;transition:color .14s;display:inline-flex;align-items:baseline;gap:5px;
 }
-.tab:hover{color:var(--ink);border-color:var(--faint)}
-.tab .n{font-size:11px;font-weight:700;color:var(--faint);background:var(--bg);border-radius:5px;padding:0 6px;line-height:18px}
-.tabs{margin-bottom:22px}
+.tab:hover{color:var(--ink)}
+.tab .n{font-size:11px;font-weight:600;color:var(--faint)}
+.tab[aria-selected="true"]{color:var(--red);border-bottom-color:var(--red)}
+.tab[aria-selected="true"] .n{color:var(--red)}
 .tab[aria-selected="true"]{background:var(--red);color:#fff;border-color:var(--red)}
 .tab[aria-selected="true"] .n{background:rgba(255,255,255,.18);color:inherit}
 
@@ -205,14 +206,6 @@ body{
 .rb-label{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint);padding-left:.32em}
 .redbtn:hover{filter:brightness(1.1) drop-shadow(0 0 14px rgba(216,51,43,.45))}
 
-/* 탭 아이콘 */
-.tab::before{font-size:13px;opacity:.9}
-.tab[data-cat="전체"]::before{content:"✦"}
-.tab[data-cat="멀티"]::before{content:"👥"}
-.tab[data-cat="싱글"]::before{content:"🧍"}
-.tab[data-cat="보드게임"]::before{content:"🎲"}
-.tab[data-cat="로그라이크"]::before{content:"🗝"}
-.tab[data-cat="장난감"]::before{content:"🔧"}
 
 
 .new{
@@ -230,9 +223,10 @@ a.btn.play:hover::before{transform:translateX(3px)}
 
 
 /* ── 키보드로 옮겨 다닐 때 어디에 있는지 보이게 ── */
-a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
+a:focus-visible,.redbtn:focus-visible{
   outline:2px solid var(--red);outline-offset:3px;border-radius:6px;
 }
+.tab:focus-visible{outline:2px solid var(--red);outline-offset:-2px;border-radius:4px}
 
 /* ══ 같이 할 사람 찾기 — 채팅 ══
    구석에 접어 두고, 새 말이 오면 빨간 점만 찍는다. 말풍선·소리 같은 알림은 일부러 안 둔다. */
