@@ -98,8 +98,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf-head .all[hidden]{display:none}
 /* 전체 보기: 네 장이 한 줄에 큼직하게, 넘치면 옆으로 민다. 한 분류만 볼 때는 줄바꿈 격자 */
 .rail{display:grid;grid-auto-flow:column;grid-auto-columns:max(230px,calc((100% - 3 * 22px) / 4));gap:22px;
-  overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
-.rail>.card{scroll-snap-align:start}
+  overflow-x:auto;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
 /* 옆으로 미는 줄 — 평소엔 안 보이고, 선반에 마우스를 올리면 3px 선만. 휠로도 끌어서도 민다 */
 .rail{scrollbar-width:thin;scrollbar-color:transparent transparent;cursor:grab}
 .rail:hover{scrollbar-color:var(--rim2) transparent}
@@ -107,7 +106,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .rail::-webkit-scrollbar-track{background:transparent}
 .rail::-webkit-scrollbar-thumb{background:transparent;border-radius:999px}
 .rail:hover::-webkit-scrollbar-thumb{background:var(--rim2)}
-.rail.drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.rail.drag{cursor:grabbing;user-select:none}
 .rail.drag .cover{transform:none}
 .shelf.grid .rail{cursor:auto}
 .shelf.grid .rail{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));overflow:visible}
@@ -123,16 +122,16 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 /* 표지 — 게임 색으로 물들인 포스터. 이모지가 크게, 이름이 밑에 */
 .cover{
   display:block;aspect-ratio:1.3;border-radius:10px;overflow:hidden;position:relative;text-decoration:none;
-  background:linear-gradient(135deg,var(--gc),var(--gc2));box-shadow:var(--shadow);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--gc) 72%,#cdbfa6),color-mix(in srgb,var(--gc2) 72%,#cdbfa6));box-shadow:var(--shadow);
   transition:transform .16s, box-shadow .16s;
 }
 .cover::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.22),transparent 55%),
-             radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.2px);background-size:auto,14px 14px}
+  background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.16),transparent 55%),
+             radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.2px);background-size:auto,14px 14px}
 .cover .em{position:absolute;right:8%;top:6%;font-size:clamp(64px,8vw,104px);line-height:1;
-  filter:drop-shadow(0 8px 12px rgba(0,0,0,.28));transform:rotate(-8deg);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
+  filter:saturate(.85) drop-shadow(0 6px 10px rgba(0,0,0,.2));transform:rotate(-8deg);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
 .cover .ttl{position:absolute;left:14px;right:14px;bottom:12px;color:#fff;font-weight:800;font-size:clamp(22px,2.4vw,30px);
-  letter-spacing:-.03em;line-height:1.1;text-shadow:0 2px 0 rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.35);word-break:keep-all}
+  letter-spacing:-.03em;line-height:1.1;text-shadow:0 1px 0 rgba(0,0,0,.25),0 4px 14px rgba(0,0,0,.28);word-break:keep-all}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cover.photo::before{background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55))}
 .card:hover .cover{transform:translateY(-3px);box-shadow:var(--lift)}
@@ -156,8 +155,8 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 a.btn{
-  display:inline-block;text-decoration:none;font-size:12.5px;font-weight:600;
-  border-radius:8px;padding:5px 12px;border:1px solid var(--line);
+  display:inline-flex;align-items:center;height:30px;line-height:1;text-decoration:none;font-size:12.5px;font-weight:600;
+  border-radius:8px;padding:0 12px;border:1px solid var(--line);
   color:var(--dim);background:transparent;transition:.14s;
 }
 a.btn:hover{color:var(--ink);border-color:var(--faint)}
@@ -603,14 +602,6 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     rail.addEventListener("pointercancel", up);
     rail.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
     rail.addEventListener("dragstart", function (e) { if (down) e.preventDefault(); });   // 표지 그림을 끌면 브라우저가 그림을 집어 간다
-    /* 휠을 굴리면 옆으로 민다. 끝에 닿았으면 그냥 페이지가 내려가게 둔다 */
-    rail.addEventListener("wheel", function (e) {
-      if (rail.scrollWidth <= rail.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-      var atEnd = e.deltaY > 0 ? rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1 : rail.scrollLeft <= 0;
-      if (atEnd) return;
-      e.preventDefault();
-      rail.scrollLeft += e.deltaY;
-    }, { passive: false });
   });
 
   function fromHash() {
