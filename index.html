@@ -55,11 +55,11 @@ header{display:flex;align-items:center;gap:22px;margin-bottom:clamp(20px,5vw,32p
   box-shadow:0 0 0 6px var(--rim), 0 0 0 7px var(--rim2), 0 2px 0 var(--red-3), 0 4px 8px -2px rgba(0,0,0,.4);
 }
 @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
-/* 단추 안 글씨 — 사이트 글꼴 그대로, 흰 굵은 글자. 필기체·기울임 같은 로고 흉내는 안 낸다 */
+/* 간판 글씨 — 흰 필기체 느낌으로 살짝 기울여서 */
 .rb-text{
   position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
-  color:#fff;font-weight:800;font-size:21px;line-height:1;letter-spacing:-.02em;text-align:center;
-  text-shadow:0 1px 0 rgba(0,0,0,.28);
+  color:#fff;font-style:italic;font-weight:800;font-size:23px;line-height:.95;letter-spacing:-.03em;
+  text-shadow:0 1px 0 rgba(0,0,0,.28),0 0 12px rgba(255,255,255,.25);transform:rotate(-7deg) translateY(-2px);
 }
 @media (prefers-reduced-motion:reduce){.redbtn{animation:none}}
 .hgroup{flex:1;min-width:220px}
@@ -97,7 +97,8 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf{margin:0 0 52px}
 .shelf[hidden]{display:none}
 .shelf-head{display:flex;align-items:flex-end;gap:14px;margin:0 0 14px}
-.shelf-head .kick{display:block;text-transform:uppercase;color:var(--faint);font-size:11.5px;font-weight:700;letter-spacing:.16em;line-height:1;margin-bottom:6px}
+.shelf-head .kick{display:block;font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;text-transform:uppercase;
+  color:var(--red);font-size:15px;letter-spacing:.14em;line-height:1;margin-bottom:4px}
 .shelf-head h2{margin:0;font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .shelf-head p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .shelf-head .all{
