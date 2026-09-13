@@ -305,6 +305,7 @@ a:focus-visible,.redbtn:focus-visible{
   <button class="tab" role="tab" data-cat="보드게임" aria-selected="false">보드게임 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="로그라이크" aria-selected="false">로그라이크 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="장난감" aria-selected="false">장난감 <span class="n"></span></button>
+  <button class="tab" role="tab" data-cat="모두" aria-selected="false">모두 보기 <span class="n"></span></button>
 </div>
 
 <!-- 카드 원본. 화면에는 안 보이고, 아래 스크립트가 분류별 선반으로 복제해 보여 준다. 게임을 더하려면 여기에 한 장.
@@ -518,7 +519,7 @@ a:focus-visible,.redbtn:focus-visible{
   var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
 
   function cats(c) { return (c.dataset.cat || "").split(/\s+/); }
-  function matches(c, cat) { return cat === "전체" || cats(c).indexOf(cat) >= 0; }
+  function matches(c, cat) { return cat === "전체" || cat === "모두" || cats(c).indexOf(cat) >= 0; }
 
   /* 원본 한 장 → 표지 카드 한 장 */
   function card(src, n) {
@@ -559,6 +560,16 @@ a:focus-visible,.redbtn:focus-visible{
     return sec;
   });
 
+  (function () {
+    var sec = document.createElement("section");
+    sec.className = "shelf grid"; sec.dataset.cat = "모두";
+    sec.innerHTML = '<div class="shelf-head"><div><h2>All</h2><p>갈래 없이 전부</p></div></div><div class="rail"></div>';
+    var rail = sec.querySelector(".rail");
+    source.forEach(function (c, k) { rail.appendChild(card(c, k + 1)); });
+    box.appendChild(sec);
+    shelves.push(sec);
+  })();
+
   tabs.forEach(function (t) {
     t.querySelector(".n").textContent = source.filter(function (c) { return matches(c, t.dataset.cat); }).length;
   });
@@ -569,10 +580,10 @@ a:focus-visible,.redbtn:focus-visible{
     tabs.forEach(function (t) { t.setAttribute("aria-selected", String(t.dataset.cat === cat)); });
     var shown = 0;
     shelves.forEach(function (sec) {
-      var on = cat === "전체" ? sec.querySelector(".card") : sec.dataset.cat === cat;
+      var on = cat === "전체" ? (sec.dataset.cat !== "모두" && sec.querySelector(".card")) : sec.dataset.cat === cat;
       sec.hidden = !on;
       sec.classList.toggle("grid", cat !== "전체");
-      sec.querySelector(".all").hidden = cat !== "전체";
+      var all = sec.querySelector(".all"); if (all) all.hidden = cat !== "전체";
       if (!on) return;
       [].slice.call(sec.querySelectorAll(".card")).forEach(function (c, i) {
         shown++;
