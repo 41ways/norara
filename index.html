@@ -122,7 +122,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 /* 표지 — 게임 색으로 물들인 포스터. 이모지가 크게, 이름이 밑에 */
 .cover{
   display:block;aspect-ratio:1.3;border-radius:10px;overflow:hidden;position:relative;text-decoration:none;
-  background:linear-gradient(135deg,color-mix(in srgb,var(--gc) 72%,#cdbfa6),color-mix(in srgb,var(--gc2) 72%,#cdbfa6));box-shadow:var(--shadow);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--gc) 86%,#fff) 0%,var(--gc) 45%,color-mix(in srgb,var(--gc) 82%,#000) 100%);box-shadow:var(--shadow);
   transition:transform .16s, box-shadow .16s;
 }
 .cover::before{content:'';position:absolute;inset:0;
@@ -130,8 +130,10 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
              radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.2px);background-size:auto,14px 14px}
 .cover .em{position:absolute;right:8%;top:6%;font-size:clamp(64px,8vw,104px);line-height:1;
   filter:saturate(.85) drop-shadow(0 6px 10px rgba(0,0,0,.2));transform:rotate(-8deg);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
-.cover .ttl{position:absolute;left:14px;right:14px;bottom:12px;color:#fff;font-weight:800;font-size:clamp(22px,2.4vw,30px);
+.cover .ttl{position:absolute;left:14px;right:14px;bottom:16px;color:#fff;font-weight:800;font-size:clamp(22px,2.4vw,30px);
   letter-spacing:-.03em;line-height:1.1;text-shadow:0 1px 0 rgba(0,0,0,.25),0 4px 14px rgba(0,0,0,.28);word-break:keep-all}
+.cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;background:var(--gc2)}   /* 둘째 색은 밑단 띠로 — 게임마다 표식 */
+.cover.photo::after{display:none}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cover.photo::before{background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55))}
 .card:hover .cover{transform:translateY(-3px);box-shadow:var(--lift)}
@@ -602,6 +604,14 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     rail.addEventListener("pointercancel", up);
     rail.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
     rail.addEventListener("dragstart", function (e) { if (down) e.preventDefault(); });   // 표지 그림을 끌면 브라우저가 그림을 집어 간다
+    /* 카드 위에서 휠을 굴리면 옆으로 민다. 끝에 닿았으면 페이지가 내려가게 둔다 */
+    rail.addEventListener("wheel", function (e) {
+      if (rail.scrollWidth <= rail.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      var atEnd = e.deltaY > 0 ? rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1 : rail.scrollLeft <= 0;
+      if (atEnd) return;
+      e.preventDefault();
+      rail.scrollLeft += e.deltaY;
+    }, { passive: false });
   });
 
   function fromHash() {
