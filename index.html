@@ -97,7 +97,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf-head .all:hover{color:var(--ink)}
 .shelf-head .all[hidden]{display:none}
 /* 전체 보기: 다섯 장이 한 줄에, 넘치면 옆으로 민다. 한 분류만 볼 때는 줄바꿈 격자 */
-.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(196px,calc((100% - 4 * 18px) / 5));gap:18px;
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(180px,calc((100% - 4 * 18px) / 5));gap:18px;
   overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
 .rail>.card{scroll-snap-align:start}
 .shelf.grid .rail{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));overflow:visible}
