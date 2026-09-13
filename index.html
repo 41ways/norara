@@ -97,7 +97,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf-head .all:hover{color:var(--ink)}
 .shelf-head .all[hidden]{display:none}
 /* 전체 보기: 네 장이 한 줄에 큼직하게, 넘치면 옆으로 민다. 한 분류만 볼 때는 줄바꿈 격자 */
-.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,calc((100% - 3 * 22px) / 4));gap:22px;
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:max(230px,calc((100% - 3 * 22px) / 4));gap:22px;
   overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
 .rail>.card{scroll-snap-align:start}
 /* 옆으로 미는 줄 — 평소엔 안 보이고, 선반에 마우스를 올리면 3px 선만. 휠로도 끌어서도 민다 */
