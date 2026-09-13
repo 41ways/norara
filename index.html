@@ -88,6 +88,9 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .tab .n{font-size:11px;font-weight:600;color:var(--faint)}
 .tab[aria-selected="true"]{color:var(--red);border-bottom-color:var(--red)}
 .tab[aria-selected="true"] .n{color:var(--red)}
+/* 「모두 보기」는 맨 오른쪽에 — 선반의 「모두 보기 ›」와 같은 꼴 */
+.tab.all{margin-left:auto;gap:2px}
+.tab.all::after{content:"›";font-size:17px;line-height:1;margin-left:2px}
 
 /* 카드 원본은 화면에 안 보인다 — 선반은 아래 스크립트가 여기서 복제해 만든다 */
 .list{display:none}
@@ -305,7 +308,7 @@ a:focus-visible,.redbtn:focus-visible{
   <button class="tab" role="tab" data-cat="보드게임" aria-selected="false">보드게임 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="로그라이크" aria-selected="false">로그라이크 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="장난감" aria-selected="false">장난감 <span class="n"></span></button>
-  <button class="tab" role="tab" data-cat="모두" aria-selected="false">모두 보기 <span class="n"></span></button>
+  <button class="tab all" role="tab" data-cat="모두" aria-selected="false">모두 보기<span class="n" hidden></span></button>
 </div>
 
 <!-- 카드 원본. 화면에는 안 보이고, 아래 스크립트가 분류별 선반으로 복제해 보여 준다. 게임을 더하려면 여기에 한 장.
