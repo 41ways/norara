@@ -63,8 +63,12 @@ header{display:flex;align-items:center;gap:22px;margin-bottom:clamp(20px,5vw,32p
 }
 @media (prefers-reduced-motion:reduce){.redbtn{animation:none}}
 .hgroup{flex:1;min-width:220px}
-h1{margin:0 0 6px;font-size:clamp(30px,6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
-h1 .dot{color:var(--red)}
+h1{margin:0 0 6px;font-size:clamp(28px,6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15;display:flex;flex-direction:column}
+h1 .by{font-size:14px;font-weight:700;color:var(--dim);letter-spacing:.04em;margin-bottom:2px}
+/* 「RED BUTTON.」 — 굵고 좁은 빨간 대문자. Impact 는 윈도·맥에 다 있다 */
+h1 .mark{font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;font-weight:400;color:var(--red);
+  font-size:clamp(46px,8vw,68px);line-height:.95;letter-spacing:.01em;text-transform:uppercase;font-stretch:condensed}
+h1 .mark i{font-style:normal}
 header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .count{font-size:12.5px;color:var(--faint);margin-top:6px}
 
@@ -296,7 +300,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
 <header>
   <div class="rb"><button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"><span class="rb-text" aria-hidden="true">Red<br>Button</span></button><span class="rb-label">random</span></div>
   <div class="hgroup">
-    <h1>41ways의 <span class="dot">레드버튼</span></h1>
+    <h1><span class="by">41ways의</span><span class="mark">Red Button<i>.</i></span></h1>
     <p>만든 게임과 장난감. 대부분 브라우저에서 바로 열림. 빨간 버튼을 누르면 랜덤으로 시작.</p>
     <p class="count" id="count"></p>
   </div>
