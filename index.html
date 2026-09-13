@@ -74,14 +74,24 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 
 /* ── 간판 밑 라이트박스: 흰 판에 빨간 좁은 대문자 ── */
 .marquee{
-  display:flex;flex-wrap:wrap;justify-content:center;background:#fff;color:var(--red);
-  border:3px solid #241f1a;border-radius:7px;padding:7px 10px;margin:0 0 22px;
+  display:flex;flex-wrap:wrap;justify-content:center;background:#fff;color:var(--red);position:relative;
+  border:3px solid #241f1a;border-radius:7px;padding:12px 16px;margin:0 0 22px;
   box-shadow:0 0 0 2px #fff inset,0 10px 24px -14px rgba(0,0,0,.5),0 0 28px rgba(255,255,255,.35);
   font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;text-transform:uppercase;letter-spacing:.08em;
   font-size:clamp(18px,3.2vw,28px);line-height:1.1;
 }
 .marquee span{padding:2px 22px;position:relative;white-space:nowrap}
 .marquee span+span::before{content:'';position:absolute;left:0;top:22%;height:56%;width:2px;background:var(--red);opacity:.55}
+/* 테두리를 따라 박힌 전구들. 마스크로 가장자리 띠만 남겨 점무늬를 깐다 */
+.marquee::before,.marquee::after{
+  content:'';position:absolute;inset:0;border-radius:5px;padding:9px;pointer-events:none;
+  background:radial-gradient(circle,#ffd66b 1.8px,rgba(255,214,107,.5) 2.6px,transparent 3.6px) 0 0/18px 18px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:bulbs 1.6s steps(1) infinite;
+}
+.marquee::after{background-position:9px 9px;animation-delay:.8s}
+@keyframes bulbs{0%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.marquee::before,.marquee::after{animation:none}}
 @media (max-width:560px){.marquee span{padding:2px 12px}}
 
 /* ── 탭 ── */
@@ -98,9 +108,8 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .tab:hover{color:var(--ink);border-color:var(--faint)}
 .tab .n{font-size:11px;font-weight:700;color:var(--faint);background:var(--bg);border-radius:999px;padding:0 7px;line-height:18px}
 .tabs{margin-bottom:22px}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--red);color:#fff;border-color:var(--red)}
 .tab[aria-selected="true"] .n{background:rgba(255,255,255,.18);color:inherit}
-@media (prefers-color-scheme:dark){.tab[aria-selected="true"]{background:var(--red);border-color:var(--red);color:#fff}}
 
 /* 카드 원본은 화면에 안 보인다 — 선반은 아래 스크립트가 여기서 복제해 만든다 */
 .list{display:none}
@@ -109,14 +118,16 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf{margin:0 0 52px}
 .shelf[hidden]{display:none}
 .shelf-head{display:flex;align-items:flex-end;gap:14px;margin:0 0 14px}
+.shelf-head .kick{display:block;font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;text-transform:uppercase;
+  color:var(--red);font-size:15px;letter-spacing:.14em;line-height:1;margin-bottom:4px}
 .shelf-head h2{margin:0;font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .shelf-head p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .shelf-head .all{
   margin-left:auto;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--dim);text-decoration:none;white-space:nowrap;padding:4px 0;
+  color:var(--red);text-decoration:none;white-space:nowrap;padding:4px 0;
 }
 .shelf-head .all::after{content:" ›";font-size:14px}
-.shelf-head .all:hover{color:var(--ink)}
+.shelf-head .all:hover{text-decoration:underline}
 .shelf-head .all[hidden]{display:none}
 /* 전체 보기: 네 장이 한 줄에 큼직하게, 넘치면 옆으로 민다. 한 분류만 볼 때는 줄바꿈 격자 */
 .rail{display:grid;grid-auto-flow:column;grid-auto-columns:max(230px,calc((100% - 3 * 22px) / 4));gap:22px;
@@ -524,12 +535,12 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
      고른 탭은 주소 해시(#보드게임)에 남아 공유·새로고침에도 유지된다. -->
 <script>
 (function () {
-  var SHELVES = [
-    ["보드게임", "보드게임을 웹으로 옮긴 팬 프로젝트"],
-    ["멀티", "방 번호만 있으면 같이"],
-    ["싱글", "혼자서"],
-    ["로그라이크", "한 판마다 다른"],
-    ["장난감", "게임은 아니지만"]
+  var SHELVES = [                                   // [분류, 부제, 간판 표기]
+    ["보드게임", "보드게임을 웹으로 옮긴 팬 프로젝트", "Board Game"],
+    ["멀티", "방 번호만 있으면 같이", "Multiplayer"],
+    ["싱글", "혼자서", "Solo"],
+    ["로그라이크", "한 판마다 다른", "Roguelike"],
+    ["장난감", "게임은 아니지만", "Toy"]
   ];
   var tabs = [].slice.call(document.querySelectorAll(".tab"));
   var source = [].slice.call(document.querySelectorAll("#source .card"));
@@ -571,7 +582,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     var mine = source.filter(function (c) { return matches(c, sh[0]); });
     var sec = document.createElement("section");
     sec.className = "shelf"; sec.dataset.cat = sh[0];
-    sec.innerHTML = '<div class="shelf-head"><div><h2>' + sh[0] + '</h2><p>' + sh[1] + '</p></div>'
+    sec.innerHTML = '<div class="shelf-head"><div><span class="kick" aria-hidden="true">' + sh[2] + '</span><h2>' + sh[0] + '</h2><p>' + sh[1] + '</p></div>'
       + '<a class="all" href="#' + sh[0] + '">모두 보기</a></div><div class="rail"></div>';
     var rail = sec.querySelector(".rail");
     mine.forEach(function (c, k) { rail.appendChild(card(c, k + 1)); });
