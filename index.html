@@ -230,6 +230,19 @@ a:focus-visible,.redbtn:focus-visible{
 }
 .tab:focus-visible{outline:2px solid var(--red);outline-offset:-2px;border-radius:4px}
 
+/* ── 맨 위로 — 채팅 단추 위에, 어느 정도 내려갔을 때만 ── */
+.top{
+  position:fixed;right:18px;bottom:76px;z-index:40;width:42px;height:42px;
+  display:grid;place-items:center;font:inherit;font-size:18px;font-weight:700;color:var(--dim);
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;cursor:pointer;box-shadow:var(--lift);
+  opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s,transform .18s,border-color .14s,color .14s;
+}
+.top.on{opacity:1;transform:none;pointer-events:auto}
+.top:hover{color:var(--red);border-color:var(--red)}
+.top:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+@media (max-width:560px){.top{right:12px;bottom:70px}}
+@media (prefers-reduced-motion:reduce){.top{transition:none}}
+
 /* ══ 같이 할 사람 찾기 — 채팅 ══
    구석에 접어 두고, 새 말이 오면 빨간 점만 찍는다. 말풍선·소리 같은 알림은 일부러 안 둔다. */
 .chat-btn{
@@ -491,6 +504,7 @@ a:focus-visible,.redbtn:focus-visible{
 
 </div>
 
+<button class="top" id="toTop" aria-label="맨 위로" title="맨 위로">↑</button>
 <!-- 같이 할 사람 찾기 — 허브 채팅. 게임 방 채팅과는 따로 논다. -->
 <button id="chatBtn" class="chat-btn" data-ev="채팅-열기" aria-label="채팅 열기">💬 같이 할 사람<span class="on" id="chatOn" hidden></span><i class="chat-dot" id="chatDot" hidden></i></button>
 <section id="chat" class="chat" hidden aria-label="같이 할 사람 찾기">
@@ -638,6 +652,13 @@ a:focus-visible,.redbtn:focus-visible{
   }
   apply(fromHash(), false);
   addEventListener("hashchange", function () { apply(fromHash(), false); });
+
+  // 맨 위로 — 한 화면 넘게 내려갔을 때만 보인다
+  var toTop = document.getElementById("toTop");
+  function topCheck() { toTop.classList.toggle("on", scrollY > innerHeight * .8); }
+  addEventListener("scroll", topCheck, { passive: true });
+  topCheck();
+  toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
 
   // 레드버튼 — 지금 고른 분류에서 하나를 랜덤으로 연다
   var rb = document.getElementById("redbtn");
