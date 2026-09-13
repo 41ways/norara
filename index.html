@@ -100,12 +100,13 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(180px,calc((100% - 4 * 18px) / 5));gap:18px;
   overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
 .rail>.card{scroll-snap-align:start}
-/* 옆으로 미는 줄 — 종이색에 맞춘 가는 막대. 마우스로 잡아 끌 수도 있다 */
-.rail{scrollbar-color:var(--rim2) transparent;cursor:grab}
-.rail::-webkit-scrollbar{height:6px}
+/* 옆으로 미는 줄 — 평소엔 안 보이고, 선반에 마우스를 올리면 3px 선만. 휠로도 끌어서도 민다 */
+.rail{scrollbar-width:thin;scrollbar-color:transparent transparent;cursor:grab}
+.rail:hover{scrollbar-color:var(--rim2) transparent}
+.rail::-webkit-scrollbar{height:3px}
 .rail::-webkit-scrollbar-track{background:transparent}
-.rail::-webkit-scrollbar-thumb{background:var(--rim2);border-radius:999px}
-.rail:hover::-webkit-scrollbar-thumb{background:var(--faint)}
+.rail::-webkit-scrollbar-thumb{background:transparent;border-radius:999px}
+.rail:hover::-webkit-scrollbar-thumb{background:var(--rim2)}
 .rail.drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
 .rail.drag .cover{transform:none}
 .shelf.grid .rail{cursor:auto}
