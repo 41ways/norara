@@ -42,7 +42,7 @@ body{
 /* ── 헤더: 레드버튼 ── */
 header{display:flex;align-items:center;gap:22px;margin-bottom:clamp(20px,5vw,32px);flex-wrap:wrap}
 .redbtn{
-  --s:118px; width:var(--s); height:var(--s); border-radius:50%; flex:none; border:0; padding:0; position:relative;
+  --s:88px; width:var(--s); height:var(--s); border-radius:50%; flex:none; border:0; padding:0; position:relative;
   background:
     radial-gradient(circle at 34% 28%, rgba(255,255,255,.55) 0 10%, transparent 32%),
     radial-gradient(circle at 50% 62%, var(--red-2), var(--red) 55%, var(--red-3) 100%);
@@ -55,44 +55,13 @@ header{display:flex;align-items:center;gap:22px;margin-bottom:clamp(20px,5vw,32p
   box-shadow:0 0 0 6px var(--rim), 0 0 0 7px var(--rim2), 0 2px 0 var(--red-3), 0 4px 8px -2px rgba(0,0,0,.4);
 }
 @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
-/* 간판 글씨 — 흰 필기체 느낌으로 살짝 기울여서 */
-.rb-text{
-  position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
-  color:#fff;font-style:italic;font-weight:800;font-size:23px;line-height:.95;letter-spacing:-.03em;
-  text-shadow:0 1px 0 rgba(0,0,0,.28),0 0 12px rgba(255,255,255,.25);transform:rotate(-7deg) translateY(-2px);
-}
 @media (prefers-reduced-motion:reduce){.redbtn{animation:none}}
 .hgroup{flex:1;min-width:220px}
-h1{margin:0 0 6px;font-size:clamp(28px,6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15;display:flex;flex-direction:column}
-h1 .by{font-size:14px;font-weight:700;color:var(--dim);letter-spacing:.04em;margin-bottom:2px}
-/* 「RED BUTTON.」 — 굵고 좁은 빨간 대문자. Impact 는 윈도·맥에 다 있다 */
-h1 .mark{font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;font-weight:400;color:var(--red);
-  font-size:clamp(46px,8vw,68px);line-height:.95;letter-spacing:.01em;text-transform:uppercase;font-stretch:condensed}
-h1 .mark i{font-style:normal}
+h1{margin:0 0 6px;font-size:clamp(30px,6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+h1 .dot{color:var(--red)}
 header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .count{font-size:12.5px;color:var(--faint);margin-top:6px}
 
-/* ── 간판 밑 라이트박스: 흰 판에 빨간 좁은 대문자 ── */
-.marquee{
-  display:flex;flex-wrap:wrap;justify-content:center;background:#fff;color:var(--red);position:relative;
-  border:3px solid #241f1a;border-radius:7px;padding:12px 16px;margin:0 0 22px;
-  box-shadow:0 0 0 2px #fff inset,0 10px 24px -14px rgba(0,0,0,.5),0 0 28px rgba(255,255,255,.35);
-  font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;text-transform:uppercase;letter-spacing:.08em;
-  font-size:clamp(18px,3.2vw,28px);line-height:1.1;
-}
-.marquee span{padding:2px 22px;position:relative;white-space:nowrap}
-.marquee span+span::before{content:'';position:absolute;left:0;top:22%;height:56%;width:2px;background:var(--red);opacity:.55}
-/* 테두리를 따라 박힌 전구들. 마스크로 가장자리 띠만 남겨 점무늬를 깐다 */
-.marquee::before,.marquee::after{
-  content:'';position:absolute;inset:0;border-radius:5px;padding:9px;pointer-events:none;
-  background:radial-gradient(circle,#ffd66b 1.8px,rgba(255,214,107,.5) 2.6px,transparent 3.6px) 0 0/18px 18px;
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
-  animation:bulbs 1.6s steps(1) infinite;
-}
-.marquee::after{background-position:9px 9px;animation-delay:.8s}
-@keyframes bulbs{0%{opacity:1}50%{opacity:.35}}
-@media (prefers-reduced-motion:reduce){.marquee::before,.marquee::after{animation:none}}
-@media (max-width:560px){.marquee span{padding:2px 12px}}
 
 /* ── 탭 ── */
 .tabs{
@@ -118,8 +87,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .shelf{margin:0 0 52px}
 .shelf[hidden]{display:none}
 .shelf-head{display:flex;align-items:flex-end;gap:14px;margin:0 0 14px}
-.shelf-head .kick{display:block;font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;text-transform:uppercase;
-  color:var(--red);font-size:15px;letter-spacing:.14em;line-height:1;margin-bottom:4px}
+.shelf-head .kick{display:block;text-transform:uppercase;color:var(--faint);font-size:11.5px;font-weight:700;letter-spacing:.16em;line-height:1;margin-bottom:6px}
 .shelf-head h2{margin:0;font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .shelf-head p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .shelf-head .all{
@@ -320,15 +288,13 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
 <div class="wrap">
 
 <header>
-  <div class="rb"><button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"><span class="rb-text" aria-hidden="true">Red<br>Button</span></button><span class="rb-label">random</span></div>
+  <div class="rb"><button class="redbtn" id="redbtn" aria-label="레드버튼 — 랜덤으로 시작" title="랜덤으로 시작"></button><span class="rb-label">random</span></div>
   <div class="hgroup">
-    <h1><span class="by">41ways의</span><span class="mark">Red Button<i>.</i></span></h1>
+    <h1>41ways의 <span class="dot">레드버튼</span></h1>
     <p>만든 게임과 장난감. 대부분 브라우저에서 바로 열림. 빨간 버튼을 누르면 랜덤으로 시작.</p>
     <p class="count" id="count"></p>
   </div>
 </header>
-<!-- 간판 밑 라이트박스 -->
-<div class="marquee" aria-hidden="true"><span>Board Game</span><span>Web Game</span><span>Toy</span></div>
 
 <div class="tabs" role="tablist" aria-label="종류">
   <button class="tab" role="tab" data-cat="전체" aria-selected="true">전체 <span class="n"></span></button>
