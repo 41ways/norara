@@ -75,46 +75,79 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 }
 .tab:hover{color:var(--ink);border-color:var(--faint)}
 .tab .n{font-size:11px;font-weight:700;color:var(--faint);background:var(--bg);border-radius:999px;padding:0 7px;line-height:18px}
+.tabs{margin-bottom:22px}
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .tab[aria-selected="true"] .n{background:rgba(255,255,255,.18);color:inherit}
 @media (prefers-color-scheme:dark){.tab[aria-selected="true"]{background:var(--red);border-color:var(--red);color:#fff}}
 
-.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
-.list[hidden]{display:none}
+/* 카드 원본은 화면에 안 보인다 — 선반은 아래 스크립트가 여기서 복제해 만든다 */
+.list{display:none}
 
-/* ── 카드 ── */
+/* ── 선반: 제목 줄 + 카드 한 줄 ── */
+.shelf{margin:0 0 40px}
+.shelf[hidden]{display:none}
+.shelf-head{display:flex;align-items:flex-end;gap:14px;margin:0 0 14px}
+.shelf-head h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.shelf-head p{margin:2px 0 0;color:var(--dim);font-size:14px}
+.shelf-head .all{
+  margin-left:auto;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--dim);text-decoration:none;white-space:nowrap;padding:4px 0;
+}
+.shelf-head .all::after{content:" ›";font-size:14px}
+.shelf-head .all:hover{color:var(--ink)}
+.shelf-head .all[hidden]{display:none}
+/* 전체 보기: 다섯 장이 한 줄에, 넘치면 옆으로 민다. 한 분류만 볼 때는 줄바꿈 격자 */
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(196px,calc((100% - 4 * 18px) / 5));gap:18px;
+  overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
+.rail>.card{scroll-snap-align:start}
+.shelf.grid .rail{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));overflow:visible}
+
+/* ── 카드: 표지 그림 + 이름 + 한 줄 정보 + 설명 ── */
 .card{
   --gc:var(--accent);--gc2:var(--accent);
-  background:var(--panel);border:1px solid var(--line);border-radius:14px;
-  padding:clamp(16px,4vw,22px);box-shadow:var(--shadow);
-  display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;
-  transition:transform .16s, box-shadow .16s;
+  display:flex;flex-direction:column;gap:6px;position:relative;min-width:0;
 }
-.card:hover{transform:translateY(-3px);box-shadow:var(--lift)}
-.card.soon{background:transparent;box-shadow:none;border-style:dashed}
 .card[hidden]{display:none}
 .card.in{animation:rise .28s cubic-bezier(.2,.8,.3,1) backwards}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
-@media (prefers-reduced-motion:reduce){.card.in{animation:none}.card:hover{transform:none}}
-
-.head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.glyph{
-  width:36px;height:36px;border-radius:10px;flex:none;
-  display:grid;place-items:center;font-size:19px;
-  background:var(--gc);color:#fff;
+/* 표지 — 게임 색으로 물들인 포스터. 이모지가 크게, 이름이 밑에 */
+.cover{
+  display:block;aspect-ratio:1.3;border-radius:10px;overflow:hidden;position:relative;text-decoration:none;
+  background:linear-gradient(135deg,var(--gc),var(--gc2));box-shadow:var(--shadow);
+  transition:transform .16s, box-shadow .16s;
 }
-/* 사진 아이콘 — 가장자리 페이드는 PNG 알파에 구워 넣어서 배경색이 뭐든 자연스럽게 녹는다 */
-.glyph.img{width:68px;height:68px;margin:-8px 0;background:none;box-shadow:none;border-radius:0;overflow:visible}
-.glyph.img img{width:100%;height:100%;display:block;object-fit:cover}
-.name{font-size:19px;font-weight:700;letter-spacing:-.02em}
-.tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
-.tag{font-size:11.5px;color:var(--faint);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
-.desc{margin:0;color:var(--dim);font-size:14.5px}
+.cover::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.22),transparent 55%),
+             radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.2px);background-size:auto,14px 14px}
+.cover .em{position:absolute;right:8%;top:6%;font-size:clamp(52px,7vw,84px);line-height:1;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.28));transform:rotate(-8deg);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
+.cover .ttl{position:absolute;left:12px;right:12px;bottom:10px;color:#fff;font-weight:800;font-size:clamp(20px,2.2vw,26px);
+  letter-spacing:-.03em;line-height:1.1;text-shadow:0 2px 0 rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.35);word-break:keep-all}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover.photo::before{background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55))}
+.card:hover .cover{transform:translateY(-3px);box-shadow:var(--lift)}
+.card:hover .cover .em{transform:rotate(-2deg) scale(1.08)}
+.card.soon .cover{filter:saturate(.7)}
+.head{display:flex;align-items:baseline;gap:8px;margin-top:6px;min-width:0}
+.rank{font-size:14px;font-weight:700;color:var(--faint);flex:none}
+.rank::after{content:"—";margin-left:6px;color:var(--line)}
+.name{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.meta{margin:0;font-size:12.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta b{color:var(--accent);font-weight:600}
+.desc{margin:0;color:var(--dim);font-size:13.5px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.note{font-size:12px;color:var(--faint);margin:0;padding:6px 9px;background:var(--accent-soft);border-radius:8px}
+.note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+@media (prefers-reduced-motion:reduce){.card.in{animation:none}.card:hover .cover{transform:none}.card:hover .cover .em{transform:rotate(-8deg)}}
+@media (max-width:560px){
+  .rail{grid-auto-columns:minmax(210px,72vw)}
+  .shelf.grid .rail{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
 
-.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 a.btn{
-  display:inline-block;text-decoration:none;font-size:13.5px;font-weight:600;
-  border-radius:9px;padding:7px 14px;border:1px solid var(--line);
+  display:inline-block;text-decoration:none;font-size:12.5px;font-weight:600;
+  border-radius:8px;padding:5px 12px;border:1px solid var(--line);
   color:var(--dim);background:transparent;transition:.14s;
 }
 a.btn:hover{color:var(--ink);border-color:var(--faint)}
@@ -123,9 +156,6 @@ a.btn.play:hover{filter:brightness(1.1)}
 .note{font-size:12.5px;color:var(--faint);margin:0;padding:8px 11px;background:var(--accent-soft);border-radius:8px}
 .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
 
-h2.sec{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px}
-h2.sec:first-of-type{margin-top:0}
-h2.sec[hidden]{display:none}
 .empty{color:var(--faint);font-size:14px;padding:26px 0;text-align:center}
 .empty[hidden]{display:none}
 
@@ -164,16 +194,7 @@ body{
 .tab[data-cat="로그라이크"]::before{content:"🗝"}
 .tab[data-cat="장난감"]::before{content:"🔧"}
 
-/* 묶음 제목에 선 */
-h2.sec{display:flex;align-items:center;gap:12px}
-h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
 
-/* 카드: 게임 색으로 옅게 물들이고, 큰 글리프 워터마크, 리본 */
-.card:hover .glyph{rotate:-6deg;scale:1.08;box-shadow:0 6px 14px -6px var(--gc)}
-/* 사진 아이콘은 가장자리가 둥글게 사라지는 그림이라, 네모난 box-shadow 를 주면
-   그림 뒤로 기울어진 네모 테두리가 드러난다. 투명도 모양을 따라가는 drop-shadow 로 대신한다. */
-.card:hover .glyph.img{box-shadow:none;filter:drop-shadow(0 4px 7px color-mix(in srgb,var(--gc) 55%,transparent))}
-.glyph{transition:rotate .2s, scale .2s}
 .new{
   font-size:10px;font-weight:800;letter-spacing:.12em;color:#fff;background:var(--red);
   border-radius:999px;padding:2px 8px;line-height:1.5;
@@ -183,48 +204,10 @@ h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
 @media (prefers-reduced-motion:reduce){.new{animation:none}}
 a.btn.play::before{content:"▶";font-size:10px;margin-right:6px;opacity:.9}
 
-/* ── 카드 워터마크 ── 평소엔 종이에 눌린 자국처럼 옅고, 마우스를 올리면 살아난다 */
-.card::after{
-  content:attr(data-glyph);position:absolute;right:-10px;bottom:-22px;
-  font-size:96px;line-height:1;pointer-events:none;
-  filter:grayscale(1);opacity:.06;transform:rotate(-12deg);
-  transition:transform .25s cubic-bezier(.2,.8,.3,1), opacity .25s;
-}
-.card:hover::after{transform:rotate(-4deg) scale(1.08);opacity:.16}
-/* 사진 아이콘 카드는 글자가 없으니 그 그림을 그대로 워터마크로 쓴다 */
-.card.photo::after{
-  content:'';width:150px;height:150px;right:-26px;bottom:-34px;
-  background:url("assets/kkang.png") center/contain no-repeat;
-}
-@media (prefers-color-scheme:dark){
-  .card::after{opacity:.09}
-  .card:hover::after{opacity:.2}
-}
-@media (prefers-reduced-motion:reduce){
-  .card::after{transition:none}
-  .card:hover::after{transform:rotate(-12deg)}
-}
-
-/* ── 마우스를 올린 카드는 테두리도 그 게임 색을 옅게 띤다 ── */
-.card{transition:transform .16s, box-shadow .16s, border-color .16s}
-.card:hover{border-color:color-mix(in srgb, var(--gc) 32%, var(--line))}
-
-/* ── 묶음 제목 앞의 작은 마름모 ── */
-h2.sec::before{content:'';width:6px;height:6px;flex:none;background:var(--red);rotate:45deg;border-radius:1px}
-
 /* ── 플레이 버튼의 삼각형이 눌리기 전에 살짝 나아간다 ── */
 a.btn.play::before{display:inline-block;transition:transform .16s}
 a.btn.play:hover::before{transform:translateX(3px)}
 
-/* ── 카드가 하나씩 차례로 올라온다 ── */
-.list .card.in:nth-child(2){animation-delay:.03s}
-.list .card.in:nth-child(3){animation-delay:.06s}
-.list .card.in:nth-child(4){animation-delay:.09s}
-.list .card.in:nth-child(5){animation-delay:.12s}
-.list .card.in:nth-child(6){animation-delay:.15s}
-.list .card.in:nth-child(7){animation-delay:.18s}
-.list .card.in:nth-child(8){animation-delay:.21s}
-.list .card.in:nth-child(n+9){animation-delay:.24s}
 
 /* ── 키보드로 옮겨 다닐 때 어디에 있는지 보이게 ── */
 a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
@@ -312,8 +295,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   <button class="tab" role="tab" data-cat="장난감" aria-selected="false">장난감 <span class="n"></span></button>
 </div>
 
-<h2 class="sec" data-sec>바로 하기</h2>
-<div class="list" data-sec>
+<!-- 카드 원본. 화면에는 안 보이고, 아래 스크립트가 분류별 선반으로 복제해 보여 준다. 게임을 더하려면 여기에 한 장 -->
+<div class="list" id="source">
 
   <article data-glyph="✏️" data-cat="멀티 보드게임" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
     <div class="head">
@@ -459,10 +442,6 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-</div>
-
-<h2 class="sec" data-sec>맥에서 돌리는 것</h2>
-<div class="list" data-sec>
 
   <article data-cat="장난감" style="--gc:#6f6f6f;--gc2:#f0902e" class="card soon photo">
     <div class="head">
@@ -478,6 +457,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
 
 </div>
 
+<div id="shelves"></div>
 <p class="empty" id="empty" hidden>이 종류는 아직 없음.</p>
 
 <footer>
@@ -505,40 +485,90 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   </form>
 </section>
 
-<!-- 종류별 탭 — 카드의 data-cat 으로 거른다. 고른 탭은 주소 해시(#멀티)에 남아 공유·새로고침에도 유지된다. -->
+<!-- 분류별 선반 — 카드 원본(#source)을 분류마다 복제해 놓는다. 한 게임이 여러 분류에 들어갈 수 있다.
+     「전체」면 선반이 다 보이고 한 줄에 다섯 장(넘치면 옆으로), 한 분류를 고르면 그 선반만 격자로 편다.
+     고른 탭은 주소 해시(#보드게임)에 남아 공유·새로고침에도 유지된다. -->
 <script>
 (function () {
+  var SHELVES = [
+    ["보드게임", "보드게임을 웹으로 옮긴 팬 프로젝트"],
+    ["멀티", "방 번호만 있으면 같이"],
+    ["싱글", "혼자서"],
+    ["로그라이크", "한 판마다 다른"],
+    ["장난감", "게임은 아니지만"]
+  ];
   var tabs = [].slice.call(document.querySelectorAll(".tab"));
-  var cards = [].slice.call(document.querySelectorAll(".card"));
-  var secs = [].slice.call(document.querySelectorAll("[data-sec]"));
+  var source = [].slice.call(document.querySelectorAll("#source .card"));
+  var box = document.getElementById("shelves");
   var empty = document.getElementById("empty");
   var count = document.getElementById("count");
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
 
   function cats(c) { return (c.dataset.cat || "").split(/\s+/); }
   function matches(c, cat) { return cat === "전체" || cats(c).indexOf(cat) >= 0; }
 
-  tabs.forEach(function (t) {
-    t.querySelector(".n").textContent = cards.filter(function (c) { return matches(c, t.dataset.cat); }).length;
+  /* 원본 한 장 → 표지 카드 한 장 */
+  function card(src, n) {
+    var name = src.querySelector(".name").textContent;
+    var img = src.querySelector(".glyph img");
+    var play = src.querySelector("a.play");
+    var tags = [].slice.call(src.querySelectorAll(".tag")).map(function (t) { return esc(t.textContent); });
+    var isNew = !!src.querySelector(".new");
+    var note = src.querySelector(".note");
+    var el = document.createElement("article");
+    el.className = "card" + (src.classList.contains("soon") ? " soon" : "");
+    el.setAttribute("style", src.getAttribute("style") || "");
+    var cover = img
+      ? '<img src="' + img.getAttribute("src") + '" alt="" loading="lazy">'
+      : '<span class="em" aria-hidden="true">' + esc(src.dataset.glyph || "") + '</span>';
+    el.innerHTML =
+      '<a class="cover' + (img ? " photo" : "") + '" ' + (play ? 'href="' + play.href + '" target="_blank" rel="noopener noreferrer" data-ev="' + esc(play.dataset.ev) + '"' : 'href="' + src.querySelector("a.btn").href + '"') + '>'
+        + cover + '<span class="ttl">' + esc(name) + '</span></a>'
+      + '<div class="head"><span class="rank">' + n + '</span><span class="name">' + esc(name) + '</span>' + (isNew ? '<span class="new">NEW</span>' : '') + '</div>'
+      + '<p class="meta">' + tags.join(" · ") + '</p>'
+      + '<p class="desc">' + src.querySelector(".desc").innerHTML + '</p>'
+      + (note ? '<p class="note">' + note.innerHTML + '</p>' : '')
+      + '<div class="acts">' + src.querySelector(".acts").innerHTML + '</div>';
+    return el;
+  }
+
+  /* 선반 만들기 — 한 번만 */
+  var shelves = SHELVES.map(function (sh) {
+    var mine = source.filter(function (c) { return matches(c, sh[0]); });
+    var sec = document.createElement("section");
+    sec.className = "shelf"; sec.dataset.cat = sh[0];
+    sec.innerHTML = '<div class="shelf-head"><div><h2>' + sh[0] + '</h2><p>' + sh[1] + '</p></div>'
+      + '<a class="all" href="#' + sh[0] + '">모두 보기</a></div><div class="rail"></div>';
+    var rail = sec.querySelector(".rail");
+    mine.forEach(function (c, k) { rail.appendChild(card(c, k + 1)); });
+    sec.hidden = !mine.length;
+    box.appendChild(sec);
+    return sec;
   });
-  var games = cards.filter(function (c) { return !c.classList.contains("soon"); }).length;
-  count.textContent = "게임 " + games + "개 · 장난감 " + (cards.length - games) + "개";
+
+  tabs.forEach(function (t) {
+    t.querySelector(".n").textContent = source.filter(function (c) { return matches(c, t.dataset.cat); }).length;
+  });
+  var games = source.filter(function (c) { return !c.classList.contains("soon"); }).length;
+  count.textContent = "게임 " + games + "개 · 장난감 " + (source.length - games) + "개";
 
   function apply(cat, push) {
     tabs.forEach(function (t) { t.setAttribute("aria-selected", String(t.dataset.cat === cat)); });
     var shown = 0;
-    cards.forEach(function (c, i) {
-      var on = matches(c, cat);
-      c.hidden = !on;
-      c.classList.remove("in");
-      if (on) { shown++; void c.offsetWidth; c.style.animationDelay = (i * 22) + "ms"; c.classList.add("in"); }
+    shelves.forEach(function (sec) {
+      var on = cat === "전체" ? sec.querySelector(".card") : sec.dataset.cat === cat;
+      sec.hidden = !on;
+      sec.classList.toggle("grid", cat !== "전체");
+      sec.querySelector(".all").hidden = cat !== "전체";
+      if (!on) return;
+      [].slice.call(sec.querySelectorAll(".card")).forEach(function (c, i) {
+        shown++;
+        c.classList.remove("in"); void c.offsetWidth; c.style.animationDelay = (i * 22) + "ms"; c.classList.add("in");
+      });
     });
-    for (var i = 0; i < secs.length; i += 2) {           // 비어버린 묶음은 제목까지 감춘다
-      var any = [].slice.call(secs[i + 1].querySelectorAll(".card")).some(function (c) { return !c.hidden; });
-      secs[i].hidden = !any; secs[i + 1].hidden = !any;
-    }
     empty.hidden = shown > 0;
     if (push) history.replaceState(null, "", cat === "전체" ? location.pathname : "#" + cat);
-    if (window.__even) window.__even();
+    if (cat !== "전체" && push) window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   tabs.forEach(function (t) { t.addEventListener("click", function () { apply(t.dataset.cat, true); }); });
@@ -551,12 +581,13 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   apply(fromHash(), false);
   addEventListener("hashchange", function () { apply(fromHash(), false); });
 
-  // 레드버튼 — 지금 보이는 것 중 하나를 랜덤으로 연다
+  // 레드버튼 — 지금 고른 분류에서 하나를 랜덤으로 연다
   var rb = document.getElementById("redbtn");
   rb.addEventListener("click", function () {
     rb.classList.add("press");
     setTimeout(function () { rb.classList.remove("press"); }, 160);
-    var pick = cards.filter(function (c) { return !c.hidden && c.querySelector("a.play"); });
+    var cat = fromHash();
+    var pick = source.filter(function (c) { return matches(c, cat) && c.querySelector("a.play"); });
     if (!pick.length) return;
     var a = pick[Math.floor(Math.random() * pick.length)].querySelector("a.play");
     window.open(a.href, "_blank", "noopener");
@@ -583,50 +614,6 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
     if (!a || !window.goatcounter || !window.goatcounter.count) return;
     window.goatcounter.count({ path: a.dataset.ev, title: a.dataset.ev, event: true });
   });
-})();
-</script>
-
-<!-- 카드 높이 통일 — 가장 큰 카드에 나머지를 맞춘다.
-     격자 높이가 정해져 있지 않아 CSS(1fr)만으로는 행끼리 안 맞는다.
-     한 열로 접히는 좁은 화면에서는 여백만 생기므로 풀어준다. -->
-<script>
-(function () {
-  var cards = [].slice.call(document.querySelectorAll(".card"));
-  var list = document.querySelector(".list");
-  if (!cards.length || !list) return;
-
-  function even() {
-    cards.forEach(function (c) { c.style.minHeight = ""; });
-    if (getComputedStyle(list).gridTemplateColumns.split(" ").length <= 1) return;
-    var tallest = 0;
-    cards.forEach(function (c) {
-      if (c.hidden) return;                       // 탭으로 가려진 카드는 재지 않는다
-      tallest = Math.max(tallest, c.getBoundingClientRect().height);
-    });
-    cards.forEach(function (c) { if (!c.hidden) c.style.minHeight = tallest + "px"; });
-  }
-  window.__even = even;                           // 탭을 바꾸면 다시 맞춘다
-
-  // 폭이 바뀔 때만 다시 계산한다.
-  // 높이 변화에도 반응하면 min-height 를 스스로 다시 트리거해 무한히 돈다.
-  var lastW = 0;
-  if (window.ResizeObserver) {
-    new ResizeObserver(function (entries) {
-      var w = Math.round(entries[0].contentRect.width);
-      if (w === lastW) return;
-      lastW = w;
-      even();
-    }).observe(list);
-  } else {
-    var timer;
-    addEventListener("resize", function () {
-      clearTimeout(timer);
-      timer = setTimeout(even, 120);
-    });
-  }
-
-  even();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(even);
 })();
 </script>
 
