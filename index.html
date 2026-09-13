@@ -295,7 +295,8 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   <button class="tab" role="tab" data-cat="장난감" aria-selected="false">장난감 <span class="n"></span></button>
 </div>
 
-<!-- 카드 원본. 화면에는 안 보이고, 아래 스크립트가 분류별 선반으로 복제해 보여 준다. 게임을 더하려면 여기에 한 장 -->
+<!-- 카드 원본. 화면에는 안 보이고, 아래 스크립트가 분류별 선반으로 복제해 보여 준다. 게임을 더하려면 여기에 한 장.
+     data-short 를 주면 표지에는 그 짧은 이름만 얹는다(사진 카드처럼 그림을 가리기 싫을 때) -->
 <div class="list" id="source">
 
   <article data-glyph="✏️" data-cat="멀티 보드게임" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
@@ -443,13 +444,13 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   </article>
 
 
-  <article data-cat="장난감" style="--gc:#6f6f6f;--gc2:#f0902e" class="card soon photo">
+  <article data-cat="장난감" data-short="깡!" style="--gc:#6f6f6f;--gc2:#f0902e" class="card soon photo">
     <div class="head">
       <span class="glyph img" aria-hidden="true"><img src="assets/kkang.png" alt="" width="256" height="256"></span>
       <span class="name">깡! 깡통 괴롭히기</span>
       <span class="tags"><span class="tag">장난감</span><span class="tag">macOS</span><span class="tag">iPhone</span></span>
     </div>
-    <p class="desc">휴대전화를 방망이 삼아 휘둘러 맥에서 도는 터미널 AI를 재촉하는 진정한 의미의 Harness Engineering.</p>
+    <p class="desc">휴대전화를 방망이 삼아 휘둘러 AI를 재촉하는 진정한 의미의 Harness Engineering</p>
     <div class="acts">
       <a class="btn" href="https://github.com/41ways/harness-fr" data-ev="clanker-코드">코드 · 설치안내</a>
     </div>
@@ -523,7 +524,7 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
       : '<span class="em" aria-hidden="true">' + esc(src.dataset.glyph || "") + '</span>';
     el.innerHTML =
       '<a class="cover' + (img ? " photo" : "") + '" ' + (play ? 'href="' + play.href + '" target="_blank" rel="noopener noreferrer" data-ev="' + esc(play.dataset.ev) + '"' : 'href="' + src.querySelector("a.btn").href + '"') + '>'
-        + cover + '<span class="ttl">' + esc(name) + '</span></a>'
+        + cover + '<span class="ttl">' + esc(src.dataset.short || name) + '</span></a>'   // 표지엔 짧은 이름 — 사진을 가리지 않게
       + '<div class="head"><span class="rank">' + n + '</span><span class="name">' + esc(name) + '</span>' + (isNew ? '<span class="new">NEW</span>' : '') + '</div>'
       + '<p class="meta">' + tags.join(" · ") + '</p>'
       + '<p class="desc">' + src.querySelector(".desc").innerHTML + '</p>'
