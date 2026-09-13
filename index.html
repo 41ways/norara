@@ -100,6 +100,15 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(180px,calc((100% - 4 * 18px) / 5));gap:18px;
   overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:thin}
 .rail>.card{scroll-snap-align:start}
+/* 옆으로 미는 줄 — 종이색에 맞춘 가는 막대. 마우스로 잡아 끌 수도 있다 */
+.rail{scrollbar-color:var(--rim2) transparent;cursor:grab}
+.rail::-webkit-scrollbar{height:6px}
+.rail::-webkit-scrollbar-track{background:transparent}
+.rail::-webkit-scrollbar-thumb{background:var(--rim2);border-radius:999px}
+.rail:hover::-webkit-scrollbar-thumb{background:var(--faint)}
+.rail.drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.rail.drag .cover{transform:none}
+.shelf.grid .rail{cursor:auto}
 .shelf.grid .rail{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));overflow:visible}
 
 /* ── 카드: 표지 그림 + 이름 + 한 줄 정보 + 설명 ── */
@@ -573,6 +582,27 @@ a:focus-visible,.tab:focus-visible,.redbtn:focus-visible{
   }
 
   tabs.forEach(function (t) { t.addEventListener("click", function () { apply(t.dataset.cat, true); }); });
+
+  /* 선반을 마우스로 잡아 옆으로 끈다. 끌고 나서 손을 떼면 그 자리의 링크는 눌리지 않는다 */
+  [].slice.call(document.querySelectorAll(".rail")).forEach(function (rail) {
+    var x0 = 0, left0 = 0, moved = false, down = false;
+    rail.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 || e.pointerType !== "mouse" || rail.scrollWidth <= rail.clientWidth) return;
+      down = true; moved = false; x0 = e.clientX; left0 = rail.scrollLeft;
+    });
+    rail.addEventListener("pointermove", function (e) {
+      if (!down) return;
+      var dx = e.clientX - x0;
+      if (!moved && Math.abs(dx) < 5) return;
+      if (!moved) { moved = true; rail.classList.add("drag"); rail.setPointerCapture(e.pointerId); }
+      rail.scrollLeft = left0 - dx;
+    });
+    function up() { down = false; rail.classList.remove("drag"); }
+    rail.addEventListener("pointerup", up);
+    rail.addEventListener("pointercancel", up);
+    rail.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    rail.addEventListener("dragstart", function (e) { if (down) e.preventDefault(); });   // 표지 그림을 끌면 브라우저가 그림을 집어 간다
+  });
 
   function fromHash() {
     var h = location.hash.replace(/^#/, "");
