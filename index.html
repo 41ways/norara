@@ -148,7 +148,9 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cover.photo::before{background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55))}
 .card:hover .cover{transform:translateY(-3px);box-shadow:var(--lift)}
-.card:hover .cover .em{transform:rotate(-2deg) scale(1.08)}
+.card:hover .cover .em,.card:hover .cover .em-img{transform:rotate(-2deg) scale(1.08)}
+.cover img.em-img{inset:auto;right:7%;top:9%;width:clamp(72px,9vw,116px);height:auto;object-fit:contain;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.25));transform:rotate(-8deg);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
 .card.soon .cover{filter:saturate(.7)}
 .head{display:flex;align-items:baseline;gap:8px;margin-top:6px;min-width:0}
 .rank{font-size:14px;font-weight:700;color:var(--faint);flex:none}
@@ -329,9 +331,9 @@ a:focus-visible,.redbtn:focus-visible{
      data-short 를 주면 표지에는 그 짧은 이름만 얹는다(사진 카드처럼 그림을 가리기 싫을 때) -->
 <div class="list" id="source">
 
-  <article data-glyph="🚧" data-cat="멀티 보드게임" style="--gc:#6b3f22;--gc2:#e0b56a" class="card">
+  <article data-cat="멀티 보드게임" style="--gc:#6b3f22;--gc2:#e0b56a" class="card">
     <div class="head">
-      <span class="glyph" aria-hidden="true">🚧</span>
+      <span class="glyph icon" aria-hidden="true"><img src="assets/quoridor.svg" alt="" width="120" height="108"></span>
       <span class="name">쿼리도</span><span class="new">NEW</span>
       <span class="tags"><span class="tag">보드게임</span><span class="tag">1–4인</span><span class="tag">온라인</span></span>
     </div>
@@ -564,11 +566,14 @@ a:focus-visible,.redbtn:focus-visible{
     var el = document.createElement("article");
     el.className = "card" + (src.classList.contains("soon") ? " soon" : "");
     el.setAttribute("style", src.getAttribute("style") || "");
-    var cover = img
+    var icon = img && src.querySelector(".glyph.icon");   // 사진이 아니라 이모지 자리에 얹는 그림
+    var cover = icon
+      ? '<img class="em-img" src="' + img.getAttribute("src") + '" alt="" loading="lazy">'
+      : img
       ? '<img src="' + img.getAttribute("src") + '" alt="" loading="lazy">'
       : '<span class="em" aria-hidden="true">' + esc(src.dataset.glyph || "") + '</span>';
     el.innerHTML =
-      '<a class="cover' + (img ? " photo" : "") + '" ' + (play ? 'href="' + play.href + '" target="_blank" rel="noopener noreferrer" data-ev="' + esc(play.dataset.ev) + '"' : 'href="' + src.querySelector("a.btn").href + '"') + '>'
+      '<a class="cover' + (img && !icon ? " photo" : "") + '" ' + (play ? 'href="' + play.href + '" target="_blank" rel="noopener noreferrer" data-ev="' + esc(play.dataset.ev) + '"' : 'href="' + src.querySelector("a.btn").href + '"') + '>'
         + cover + '<span class="ttl">' + esc(src.dataset.short || name) + '</span></a>'   // 표지엔 짧은 이름 — 사진을 가리지 않게
       + '<div class="head"><span class="rank">' + n + '</span><span class="name">' + esc(name) + '</span>' + (isNew ? '<span class="new">NEW</span>' : '') + '</div>'
       + '<p class="meta">' + tags.join(" · ") + '</p>'
