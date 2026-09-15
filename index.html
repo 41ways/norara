@@ -155,6 +155,7 @@ header p{margin:0;color:var(--dim);font-size:15px;max-width:42em}
 .head{display:flex;align-items:baseline;gap:8px;margin-top:6px;min-width:0}
 .rank{font-size:14px;font-weight:700;color:var(--faint);flex:none}
 .rank::after{content:"—";margin-left:6px;color:var(--line)}
+.shelf[data-cat="추천"] .rank{display:none}   /* 추천은 순위가 아니라서 번호를 안 붙인다 */
 .name{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
 .meta{margin:0;font-size:13px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta b{color:var(--accent);font-weight:600}
@@ -319,6 +320,7 @@ a:focus-visible,.redbtn:focus-visible{
 
 <div class="tabs" role="tablist" aria-label="종류">
   <button class="tab" role="tab" data-cat="전체" aria-selected="true">전체 <span class="n"></span></button>
+  <button class="tab" role="tab" data-cat="추천" aria-selected="false">추천 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="보드게임" aria-selected="false">보드게임 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="싱글" aria-selected="false">싱글 <span class="n"></span></button>
   <button class="tab" role="tab" data-cat="멀티" aria-selected="false">멀티 <span class="n"></span></button>
@@ -331,6 +333,19 @@ a:focus-visible,.redbtn:focus-visible{
      data-short 를 주면 표지에는 그 짧은 이름만 얹는다(사진 카드처럼 그림을 가리기 싫을 때) -->
 <div class="list" id="source">
 
+  <!-- data-rec: 추천 선반에 오르는 순서(작을수록 앞). 없으면 추천에 안 나온다 -->
+  <article data-glyph="⚔️" data-cat="멀티" data-rec="1" style="--gc:#8e2f22;--gc2:#e0b56a" class="card">
+    <div class="head">
+      <span class="glyph" aria-hidden="true">⚔️</span>
+      <span class="name">결투</span><span class="new">NEW</span>
+      <span class="tags"><span class="tag">반응속도</span><span class="tag">1–4인</span><span class="tag">봇</span></span>
+    </div>
+    <p class="desc">총잡이는 "지금!" 뜨면 먼저 쏜 사람이 이김, 먼저 쏘면 오발. 사무라이는 1:1로 속공·강공·방어 중 하나를 골라 벰. 한 기기 둘이도 됨.</p>
+    <div class="acts">
+      <a class="btn play" href="https://duel.41ways.workers.dev/" target="_blank" rel="noopener noreferrer" data-ev="duel-플레이">플레이</a>
+      <a class="btn" href="https://github.com/41ways/duel" data-ev="duel-코드">코드</a>
+    </div>
+  </article>
 
   <article data-glyph="🪐" data-cat="싱글" style="--gc:#0b1020;--gc2:#f2c14e" class="card">
     <div class="head">
@@ -345,7 +360,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="🌏" data-cat="싱글" style="--gc:#2447d6;--gc2:#111111" class="card">
+  <article data-glyph="🌏" data-cat="싱글" data-rec="3" style="--gc:#2447d6;--gc2:#111111" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🌏</span>
       <span class="name">행선지2: World</span>
@@ -371,7 +386,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="✏️" data-cat="멀티 보드게임" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
+  <article data-glyph="✏️" data-cat="멀티 보드게임" data-rec="8" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">✏️</span>
       <span class="name">텔레스트레이션</span>
@@ -384,7 +399,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="📍" data-cat="싱글" style="--gc:#e0301e;--gc2:#111111" class="card">
+  <article data-glyph="📍" data-cat="싱글" data-rec="2" style="--gc:#e0301e;--gc2:#111111" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">📍</span>
       <span class="name">행선지</span>
@@ -397,7 +412,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="📝" data-cat="멀티" style="--gc:#d0543a;--gc2:#2b2622" class="card">
+  <article data-glyph="📝" data-cat="멀티" data-rec="7" style="--gc:#d0543a;--gc2:#2b2622" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">📝</span>
       <span class="name">끝말잇기</span>
@@ -410,7 +425,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="🔍" data-cat="싱글" style="--gc:#1c1f2b;--gc2:#c9a961" class="card">
+  <article data-glyph="🔍" data-cat="싱글" data-rec="4" style="--gc:#1c1f2b;--gc2:#c9a961" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🔍</span>
       <span class="name">무고</span>
@@ -437,7 +452,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="🔢" data-cat="싱글 로그라이크" style="--gc:#2a2924;--gc2:#c2453a" class="card">
+  <article data-glyph="🔢" data-cat="싱글 로그라이크" data-rec="5" style="--gc:#2a2924;--gc2:#c2453a" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🔢</span>
       <span class="name">한 줄</span>
@@ -489,7 +504,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="🌾" data-cat="멀티 보드게임" style="--gc:#4f7a3a;--gc2:#c98a3c" class="card">
+  <article data-glyph="🌾" data-cat="멀티 보드게임" data-rec="6" style="--gc:#4f7a3a;--gc2:#c98a3c" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🌾</span>
       <span class="name">카탄</span>
@@ -566,6 +581,7 @@ a:focus-visible,.redbtn:focus-visible{
 <script>
 (function () {
   var SHELVES = [                                   // [분류(탭과 같은 이름), 부제, 선반 제목]
+    ["추천", "많이 찾는 게임을 참고해서 직접 고른 것. 순서는 조회수 순이 아님", "Recommended"],
     ["보드게임", "보드게임을 웹으로 옮긴 팬 프로젝트", "Board Game"],
     ["싱글", "혼자서", "Single Player"],
     ["멀티", "방 번호만 있으면 같이", "Multi Player"],
@@ -580,7 +596,8 @@ a:focus-visible,.redbtn:focus-visible{
   var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
 
   function cats(c) { return (c.dataset.cat || "").split(/\s+/); }
-  function matches(c, cat) { return cat === "전체" || cat === "모두" || cats(c).indexOf(cat) >= 0; }
+  // 추천은 갈래가 아니라 카드의 data-rec 순서로 — 조회수를 참고하되 그대로 줄 세우지는 않는다
+  function matches(c, cat) { return cat === "전체" || cat === "모두" || (cat === "추천" ? !!c.dataset.rec : cats(c).indexOf(cat) >= 0); }
 
   /* 원본 한 장 → 표지 카드 한 장 */
   function card(src, n) {
@@ -613,6 +630,7 @@ a:focus-visible,.redbtn:focus-visible{
   /* 선반 만들기 — 한 번만 */
   var shelves = SHELVES.map(function (sh) {
     var mine = source.filter(function (c) { return matches(c, sh[0]); });
+    if (sh[0] === "추천") mine.sort(function (a, b) { return a.dataset.rec - b.dataset.rec; });
     var sec = document.createElement("section");
     sec.className = "shelf"; sec.dataset.cat = sh[0];
     sec.innerHTML = '<div class="shelf-head"><div><h2>' + sh[2] + '</h2><p>' + sh[1] + '</p></div>'
