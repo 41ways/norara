@@ -72,8 +72,13 @@ function fromUs(req) {
 }
 
 /** 판 수·인원·걸린 시간 — 날짜·게임·이름 한 줄에 더한다 */
+const DEV = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
 async function ev(req, env) {
   if (!fromUs(req)) return new Response('forbidden', { status: 403 });
+  // 개발 중에 돌린 판은 세지 않는다 — 시험 삼아 돌린 것이 포트폴리오 숫자에 섞이면 안 된다.
+  // (오류는 그대로 받는다. 만들면서 터뜨린 것도 보고 싶으니까.)
+  if (DEV.test(req.headers.get('Origin') || '')) return new Response('ignored (dev)', { status: 202 });
 
   const now = Date.now();
   if (tooMany((req.headers.get('CF-Connecting-IP') || '?') + '|ev', now, EV_PER_MIN)) {
