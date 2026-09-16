@@ -15,3 +15,15 @@ CREATE TABLE IF NOT EXISTS errs (
 );
 CREATE INDEX IF NOT EXISTS errs_last ON errs (last_at DESC);
 CREATE INDEX IF NOT EXISTS errs_app  ON errs (app, last_at DESC);
+
+-- 판 수·인원·걸린 시간 — 날짜·게임·이름으로 묶어 더하기만 한다. 한 판에 한 줄씩 쌓지 않는다.
+CREATE TABLE IF NOT EXISTS evs (
+  day     TEXT    NOT NULL,
+  app     TEXT    NOT NULL,
+  name    TEXT    NOT NULL,
+  n       INTEGER NOT NULL DEFAULT 0,
+  secs    INTEGER NOT NULL DEFAULT 0,
+  players INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, app, name)
+);
+CREATE INDEX IF NOT EXISTS evs_app ON evs (app, day DESC);
