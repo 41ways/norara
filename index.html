@@ -977,5 +977,29 @@ a:focus-visible,.redbtn:focus-visible{
   }
 })();
 </script>
+
+<!-- 오류 수집 — 화면에서 터진 오류를 norara-errors 워커로 모은다 (메시지·파일·줄만) -->
+<script>
+(function () {
+  var left = 5;                              // 한 번 열 때 다섯 건까지만
+  function send(o) {
+    if (left-- <= 0) return;
+    o.app = "hub";
+    o.page = location.pathname + location.search;
+    try {
+      navigator.sendBeacon("https://norara-errors.41ways.workers.dev/report", JSON.stringify(o));
+    } catch (e) {}
+  }
+  addEventListener("error", function (e) {
+    if (!e.message) return;                  // 그림 파일이 안 열린 것은 뺀다
+    send({ msg: e.message, src: e.filename, line: e.lineno, col: e.colno,
+           stack: e.error && e.error.stack });
+  });
+  addEventListener("unhandledrejection", function (e) {
+    var r = e.reason;
+    send({ msg: "처리되지 않은 거절: " + ((r && r.message) || r), stack: r && r.stack });
+  });
+})();
+</script>
 </body>
 </html>
