@@ -10,7 +10,10 @@
  * 판 수·인원·걸린 시간도 같은 곳으로 받는다(POST /ev). 날짜·게임·이름으로 묶어 더하기만 하므로
  * 한 판에 한 줄씩 쌓이지 않는다.
  *
- * 보기: GET /?key=...  (오류 표)  ·  GET /stats?key=...  (지표 표)  ·  /list · /nums (JSON)
+ * 지금 누가 있는지도 받는다(POST /beat). 탭이 화면에 떠 있는 동안 1분에 한 번 "여기 있음"을 보내고,
+ * 90초 넘게 소식이 없으면 없는 것으로 친다. 게임마다 방 서버가 따로 있든 없든 같은 방식으로 센다.
+ *
+ * 보기: GET /?key=...  (오류 표)  ·  GET /stats?key=...  (지금 + 지표 표)  ·  /list · /nums · /live (JSON)
  */
 
 const MAX_BODY = 4000;          // 한 건에 담을 수 있는 크기
@@ -22,6 +25,9 @@ const EV_PER_MIN = 60;          // 한 곳에서 1분에 받는 지표 건수 �
 const MAX_SECS = 4 * 3600;      // 이보다 긴 시간은 탭을 켜 둔 것으로 보고 버린다
 const MAX_PLAYERS = 12;
 const EV_NAME = /^[a-z][a-z0-9_]{0,15}$/;   // start · end · win 같은 이름만
+const LIVE_MS = 90_000;         // 이만큼 소식이 없으면 떠난 것으로 친다 (탭은 60초마다 보낸다)
+const BEAT_PER_MIN = 30;        // 한 곳에서 1분에 받는 "여기 있음" — 탭 여러 개를 켜 둔 집도 넉넉히
+const SID = /^[a-z0-9]{6,32}$/;
 
 // 우리 화면에서 온 것만 받는다.
 const ORIGINS = [
@@ -106,6 +112,53 @@ async function ev(req, env) {
   return new Response('ok');
 }
 
+/** 지금 누가 있나 — 탭 하나가 한 줄. 떠나면 지우고, 소식이 끊긴 줄은 가끔 청소한다 */
+async function beat(req, env) {
+  if (!fromUs(req)) return new Response('forbidden', { status: 403 });
+  if (DEV.test(req.headers.get('Origin') || '')) return new Response('ignored (dev)', { status: 202 });
+
+  const now = Date.now();
+  if (tooMany((req.headers.get('CF-Connecting-IP') || '?') + '|beat', now, BEAT_PER_MIN)) {
+    return new Response('slow down', { status: 429 });
+  }
+  let o;
+  try { o = JSON.parse((await req.text()).slice(0, 300)); } catch (_) { return new Response('bad json', { status: 400 }); }
+  const sid = cut(o && o.sid, 32);
+  if (!sid || !SID.test(sid)) return new Response('bad sid', { status: 400 });
+
+  if (o.st === 'gone') {
+    await env.DB.prepare('DELETE FROM live WHERE sid = ?').bind(sid).run();
+    return new Response('ok');
+  }
+  const app = cut(o.app, 40) || 'unknown';
+  const st = o.st === 'play' ? 'play' : 'look';
+  await env.DB.prepare(
+    'INSERT INTO live (sid, app, st, at) VALUES (?, ?, ?, ?)' +
+    ' ON CONFLICT (sid) DO UPDATE SET app = ?, st = ?, at = ?'
+  ).bind(sid, app, st, now, app, st, now).run();
+
+  // 스무 번에 한 번쯤 오래된 줄을 치운다 — 탭을 그냥 닫으면 "떠남"이 안 올 때가 있다
+  if (Math.random() < 0.05) {
+    await env.DB.prepare('DELETE FROM live WHERE at < ?').bind(now - 10 * 60_000).run();
+  }
+  return new Response('ok');
+}
+
+/** 게임별로 지금 몇 명이 판 중이고 몇 명이 화면만 보고 있는지 */
+async function liveNow(env) {
+  const since = Date.now() - LIVE_MS;
+  const { results } = await env.DB.prepare(
+    'SELECT app, st, COUNT(*) AS c FROM live WHERE at >= ? GROUP BY app, st'
+  ).bind(since).all();
+  const by = new Map();
+  for (const r of results) {
+    const g = by.get(r.app) || { app: r.app, play: 0, look: 0 };
+    g[r.st === 'play' ? 'play' : 'look'] += r.c;
+    by.set(r.app, g);
+  }
+  return [...by.values()].sort((a, b) => (b.play - a.play) || (b.look - a.look));
+}
+
 async function report(req, env) {
   const origin = req.headers.get('Origin') || '';
   if (!ORIGINS.some(re => re.test(origin))) return new Response('forbidden', { status: 403 });
@@ -185,7 +238,7 @@ const mmss = sec => {
 };
 
 /** 지표 표 — 게임별 판 수·평균 인원·평균 시간 */
-function statsPage(rows, days, key) {
+function statsPage(rows, days, key, live) {
   const by = new Map();
   for (const r of rows) {
     const g = by.get(r.app) || { app: r.app, start: 0, end: 0, secs: 0, players: 0, visit: 0, vsecs: 0 };
@@ -219,11 +272,27 @@ function statsPage(rows, days, key) {
       '</td><td class="num">' + (tot.visit ? mmss(tot.vsecs / tot.visit) : '—') + '</td></tr></table>'
     : '<div class="empty">아직 들어온 지표가 없음</div>';
 
+  // 지금 — 90초 안에 소식이 온 탭만. 판 중인 사람이 있는 게임이 위로
+  const now = live || [];
+  const nowPlay = now.reduce((a, g) => a + g.play, 0), nowLook = now.reduce((a, g) => a + g.look, 0);
+  const nowBox = now.length
+    ? '<table><tr><th>게임</th><th class="num">판 중</th><th class="num">화면만</th></tr>' +
+      now.map(g => '<tr><td><b>' + esc(g.app) + '</b></td>' +
+        '<td class="num">' + (g.play ? '<b class="on">' + g.play + '명</b>' : '—') + '</td>' +
+        '<td class="num">' + (g.look ? g.look + '명' : '—') + '</td></tr>').join('') +
+      '<tr class="sum"><td>전부</td><td class="num">' + nowPlay + '명</td><td class="num">' + nowLook + '명</td></tr></table>'
+    : '<div class="empty">지금은 아무도 없음</div>';
+
   return '<!doctype html><meta charset="utf-8"><title>norara 지표</title>' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">' + STYLE +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<meta http-equiv="refresh" content="60">' + STYLE +      // 1분마다 새로 — 지금 칸이 저절로 바뀐다
+    '<style>b.on{color:#1f8a4c}h2{font-size:15px;margin:22px 0 8px}</style>' +
     '<h1>norara 지표</h1>' +
-    '<p class="sub">최근 ' + days + '일. 끝낸 판은 결과 화면까지 간 것만 셌음.</p>' +
-    nav('num', key) + body;
+    '<p class="sub">지금 칸은 90초 안에 소식이 온 화면만 셈. 1분마다 저절로 새로 고침.</p>' +
+    nav('num', key) +
+    '<h2>지금</h2>' + nowBox +
+    '<h2>최근 ' + days + '일</h2>' +
+    '<p class="sub">끝낸 판은 결과 화면까지 간 것만 셌음.</p>' + body;
 }
 
 /** 사람이 열어 보는 표 — 최근에 터진 것부터 */
@@ -260,6 +329,15 @@ export default {
       if (req.method !== 'POST') return new Response('post only', { status: 405 });
       return ev(req, env);
     }
+    if (url.pathname === '/beat') {
+      if (req.method !== 'POST') return new Response('post only', { status: 405 });
+      return beat(req, env);
+    }
+    if (url.pathname === '/live') {
+      const key = url.searchParams.get('key');
+      if (!env.VIEW_KEY || key !== env.VIEW_KEY) return new Response('nope', { status: 401 });
+      return Response.json({ at: Date.now(), games: await liveNow(env) });
+    }
 
     // 보기 — 열쇠가 맞아야 한다
     if (url.pathname === '/' || url.pathname === '/list') {
@@ -283,7 +361,8 @@ export default {
         'SELECT * FROM evs WHERE day >= ? ORDER BY day DESC'
       ).bind(from).all();
       if (url.pathname === '/nums') return Response.json({ from, rows: results });
-      return new Response(statsPage(results, days, key), { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      const live = await liveNow(env);
+      return new Response(statsPage(results, days, key, live), { headers: { 'content-type': 'text/html; charset=utf-8' } });
     }
 
     return new Response('norara errors', { status: 404 });

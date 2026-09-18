@@ -27,3 +27,13 @@ CREATE TABLE IF NOT EXISTS evs (
   PRIMARY KEY (day, app, name)
 );
 CREATE INDEX IF NOT EXISTS evs_app ON evs (app, day DESC);
+
+-- 지금 누가 있나 — 탭 하나가 한 줄. 화면이 보이는 동안 1분에 한 번 at 을 새로 쓴다.
+-- 오래된 줄은 읽을 때와 가끔 쓸 때 지운다. 개인을 가려낼 정보는 없다(sid 는 탭마다 새로 만든 무작위 값).
+CREATE TABLE IF NOT EXISTS live (
+  sid TEXT    PRIMARY KEY,
+  app TEXT    NOT NULL,
+  st  TEXT    NOT NULL,     -- play: 판 중 · look: 화면만 보는 중
+  at  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS live_at ON live (at);
