@@ -31,7 +31,7 @@ const EV_NAME = /^[a-z][a-z0-9_]{0,15}$/;   // start · end · win 같은 이름
 const LIVE_MS = 90_000;         // 이만큼 소식이 없으면 떠난 것으로 친다 (탭은 60초마다 보낸다)
 const BEAT_PER_MIN = 30;        // 한 곳에서 1분에 받는 "여기 있음" — 탭 여러 개를 켜 둔 집도 넉넉히
 const SID = /^[a-z0-9]{6,32}$/;
-const RUN_MAX = 20000;          // 한 판 요약의 최대 크기 (sendBeacon 은 64KB 까지)
+const RUN_MAX = 30000;          // 한 판 요약의 최대 크기 (sendBeacon 은 64KB 까지)
 const RUN_PER_MIN = 6;          // 한 곳에서 1분에 받는 판 요약
 const KEYNAME = /^[A-Za-z0-9_\-]{1,48}$/;   // 플래그·손님·선택지 id
 
@@ -166,6 +166,8 @@ async function runPost(req, env) {
     })),
     sales: keyMap(o.sales, 60, true),
     shop: keyList(o.shop, 12),
+    tele: keyMap(o.tele, 80, true),   // 행동 계측 — 신고·덤·인장 살핀 횟수, 결정까지 걸린 초, 플레이 초
+    lat: keyMap(o.lat, 200, true),    // 대화 손님 틀별로 결정까지 걸린 초
   };
   await env.DB.prepare(
     'INSERT OR IGNORE INTO runs (at, day, app, v, sid, run, ending, days, gold, flags, choices, data)' +
@@ -180,7 +182,7 @@ async function runPost(req, env) {
 async function runsAgg(url, env) {
   const app = cut(url.searchParams.get('app'), 40) || 'armsdealer';
   const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then(r => r.results);
-  const [tot, endings, byRun, flags, choices, versions, daily] = await Promise.all([
+  const [tot, endings, byRun, flags, choices, versions, daily, tele, lat] = await Promise.all([
     q('SELECT COUNT(*) AS n, COUNT(DISTINCT sid) AS players, AVG(days) AS days, AVG(gold) AS gold, MIN(at) AS since, MAX(at) AS last FROM runs WHERE app = ?', app),
     q('SELECT ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY ending ORDER BY n DESC', app),
     q("SELECT CASE WHEN run <= 0 THEN '1' WHEN run = 1 OR run = 2 THEN '2-3' ELSE '4+' END AS b, ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY b, ending", app),
@@ -188,8 +190,10 @@ async function runsAgg(url, env) {
     q('SELECT j.key AS tpl, j.value AS action, COUNT(*) AS n FROM runs, json_each(runs.choices) j WHERE app = ? GROUP BY j.key, j.value ORDER BY n DESC LIMIT 600', app),
     q('SELECT v, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY v ORDER BY n DESC', app),
     q('SELECT day, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY day ORDER BY day DESC LIMIT 60', app),
+    q("SELECT j.key AS k, SUM(j.value) AS s, COUNT(*) AS n FROM runs, json_each(runs.data, '$.tele') j WHERE app = ? GROUP BY j.key", app),
+    q("SELECT j.key AS tpl, AVG(j.value) AS avg, COUNT(*) AS n FROM runs, json_each(runs.data, '$.lat') j WHERE app = ? GROUP BY j.key ORDER BY n DESC LIMIT 200", app),
   ]);
-  return Response.json({ app, at: Date.now(), total: tot[0] || {}, endings, byRun, flags, choices, versions, daily }, {
+  return Response.json({ app, at: Date.now(), total: tot[0] || {}, endings, byRun, flags, choices, versions, daily, tele, lat }, {
     headers: { 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=60' },
   });
 }
