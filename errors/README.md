@@ -11,6 +11,15 @@
 - `visit` 은 화면이 자동으로 보낸다 (탭을 덮거나 닫을 때 한 번, 5초 미만은 뺀다)
 - **localhost 에서 온 지표는 버린다** — 만들면서 돌린 판이 섞이지 않게. 오류는 localhost 것도 받는다
 
+## 판 요약 (POST /run)
+
+무기상(armsdealer)처럼 한 판이 끝나는 게임이 엔딩·선택·세력 관계를 익명으로 한 번 보낸다. 표 `runs`, 한 판에 한 줄.
+
+- 개인을 가릴 정보 없음 — 브라우저가 만든 무작위 sid 와 "몇 번째로 끝낸 판인지(run)" 뿐. 같은 (sid, run) 은 한 번만 받는다
+- localhost 에서 온 판은 버린다 (지표와 같음)
+- `GET /runs/agg?app=armsdealer` — 열쇠 없이 묶음 숫자만(엔딩별·선택별·플래그별·몇 번째 판별). 공개 통계 화면이 읽는다
+- `GET /runs?key=열쇠&app=&limit=` — 개별 판 JSON. 분석할 때는 `wrangler d1 execute norara-errors --remote --command "SELECT ..."` 로 바로 뽑아도 된다
+
 ## 오류 (POST /report)
 
 화면 조각은 각 게임 `index.html` 맨 아래에 있다 (`window.onerror` · 처리되지 않은 Promise 거절 → `sendBeacon`).

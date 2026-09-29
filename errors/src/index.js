@@ -13,6 +13,9 @@
  * 지금 누가 있는지도 받는다(POST /beat). 탭이 화면에 떠 있는 동안 1분에 한 번 "여기 있음"을 보내고,
  * 90초 넘게 소식이 없으면 없는 것으로 친다. 게임마다 방 서버가 따로 있든 없든 같은 방식으로 센다.
  *
+ * 한 판이 끝날 때 그 판의 요약(엔딩·선택·세력 관계)도 받는다(POST /run). 익명 — 개인을 가려낼 정보 없이 브라우저가 만든 무작위 sid 뿐.
+ *   GET /runs/agg 는 열쇠 없이 묶음 숫자만 준다(공개 통계 화면용). 개별 판은 GET /runs?key= 로만.
+ *
  * 보기: GET /?key=...  (오류 표)  ·  GET /stats?key=...  (지금 + 지표 표)  ·  /list · /nums · /live (JSON)
  */
 
@@ -28,6 +31,9 @@ const EV_NAME = /^[a-z][a-z0-9_]{0,15}$/;   // start · end · win 같은 이름
 const LIVE_MS = 90_000;         // 이만큼 소식이 없으면 떠난 것으로 친다 (탭은 60초마다 보낸다)
 const BEAT_PER_MIN = 30;        // 한 곳에서 1분에 받는 "여기 있음" — 탭 여러 개를 켜 둔 집도 넉넉히
 const SID = /^[a-z0-9]{6,32}$/;
+const RUN_MAX = 20000;          // 한 판 요약의 최대 크기 (sendBeacon 은 64KB 까지)
+const RUN_PER_MIN = 6;          // 한 곳에서 1분에 받는 판 요약
+const KEYNAME = /^[A-Za-z0-9_\-]{1,48}$/;   // 플래그·손님·선택지 id
 
 // 우리 화면에서 온 것만 받는다.
 const ORIGINS = [
@@ -110,6 +116,82 @@ async function ev(req, env) {
   ).bind(dayOf(now), app, name, secs, players, secs, players).run();
 
   return new Response('ok');
+}
+
+/** 한 판 요약 — 엔딩·선택·세력 관계. 한 브라우저(sid)의 같은 순번(run)은 한 번만 받는다 */
+const clampInt = (v, lo, hi) => { const n = num(v); return n == null ? null : Math.min(hi, Math.max(lo, n)); };
+const keyList = (a, max) => (Array.isArray(a) ? a : []).filter(x => typeof x === 'string' && KEYNAME.test(x)).slice(0, max);
+function keyMap(o, max, numeric) {
+  const out = {};
+  if (!o || typeof o !== 'object') return out;
+  let n = 0;
+  for (const [k, v] of Object.entries(o)) {
+    if (n >= max) break;
+    if (!KEYNAME.test(k)) continue;
+    if (numeric) { const x = Number(v); if (!Number.isFinite(x)) continue; out[k] = Math.round(x * 10) / 10; }
+    else { const x = cut(v, 48); if (!x || !KEYNAME.test(x)) continue; out[k] = x; }
+    n++;
+  }
+  return out;
+}
+
+async function runPost(req, env) {
+  if (!fromUs(req)) return new Response('forbidden', { status: 403 });
+  // 만들면서 돌린 판은 통계에 섞지 않는다
+  if (DEV.test(req.headers.get('Origin') || '')) return new Response('ignored (dev)', { status: 202 });
+
+  const now = Date.now();
+  if (tooMany((req.headers.get('CF-Connecting-IP') || '?') + '|run', now, RUN_PER_MIN)) {
+    return new Response('slow down', { status: 429 });
+  }
+  const text = (await req.text()).slice(0, RUN_MAX);
+  let o;
+  try { o = JSON.parse(text); } catch (_) { return new Response('bad json', { status: 400 }); }
+  if (!o || typeof o !== 'object') return new Response('bad', { status: 400 });
+
+  const app = cut(o.app, 40) || 'unknown';
+  const sid = cut(o.sid, 32);
+  const ending = cut(o.ending, 48);
+  const days = clampInt(o.days, 1, 60);
+  if (!sid || !SID.test(sid)) return new Response('bad sid', { status: 400 });
+  if (!ending || !KEYNAME.test(ending) || days == null) return new Response('bad run', { status: 400 });
+
+  const data = {
+    how: cut(o.how, 24),
+    world: keyMap(o.world, 120, true),
+    closed: keyMap(o.closed, 20, false),
+    clash: (Array.isArray(o.clash) ? o.clash : []).slice(0, 12).map(c => ({
+      d: clampInt(c && c.d, 0, 60), a: cut(c && c.a, 24), b: cut(c && c.b, 24),
+      w: cut(c && c.w, 24), how: cut(c && c.how, 12), backed: cut(c && c.backed, 24),
+    })),
+    sales: keyMap(o.sales, 60, true),
+    shop: keyList(o.shop, 12),
+  };
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO runs (at, day, app, v, sid, run, ending, days, gold, flags, choices, data)' +
+    ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(now, dayOf(now), app, cut(o.v, 16), sid, clampInt(o.run, 0, 99999) || 0, ending, days,
+    clampInt(o.gold, -100000, 10000000) || 0,
+    JSON.stringify(keyList(o.flags, 300)), JSON.stringify(keyMap(o.choices, 400, false)), JSON.stringify(data)).run();
+  return new Response('ok');
+}
+
+/** 묶음 숫자 — 열쇠 없이 누구나. 개별 판·sid 는 나가지 않는다 */
+async function runsAgg(url, env) {
+  const app = cut(url.searchParams.get('app'), 40) || 'armsdealer';
+  const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then(r => r.results);
+  const [tot, endings, byRun, flags, choices, versions, daily] = await Promise.all([
+    q('SELECT COUNT(*) AS n, COUNT(DISTINCT sid) AS players, AVG(days) AS days, AVG(gold) AS gold, MIN(at) AS since, MAX(at) AS last FROM runs WHERE app = ?', app),
+    q('SELECT ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY ending ORDER BY n DESC', app),
+    q("SELECT CASE WHEN run <= 0 THEN '1' WHEN run = 1 OR run = 2 THEN '2-3' ELSE '4+' END AS b, ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY b, ending", app),
+    q('SELECT j.value AS flag, COUNT(*) AS n FROM runs, json_each(runs.flags) j WHERE app = ? GROUP BY j.value ORDER BY n DESC LIMIT 400', app),
+    q('SELECT j.key AS tpl, j.value AS action, COUNT(*) AS n FROM runs, json_each(runs.choices) j WHERE app = ? GROUP BY j.key, j.value ORDER BY n DESC LIMIT 600', app),
+    q('SELECT v, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY v ORDER BY n DESC', app),
+    q('SELECT day, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY day ORDER BY day DESC LIMIT 60', app),
+  ]);
+  return Response.json({ app, at: Date.now(), total: tot[0] || {}, endings, byRun, flags, choices, versions, daily }, {
+    headers: { 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=60' },
+  });
 }
 
 /** 지금 누가 있나 — 탭 하나가 한 줄. 떠나면 지우고, 소식이 끊긴 줄은 가끔 청소한다 */
@@ -328,6 +410,19 @@ export default {
     if (url.pathname === '/ev') {
       if (req.method !== 'POST') return new Response('post only', { status: 405 });
       return ev(req, env);
+    }
+    if (url.pathname === '/run') {
+      if (req.method !== 'POST') return new Response('post only', { status: 405 });
+      return runPost(req, env);
+    }
+    if (url.pathname === '/runs/agg') return runsAgg(url, env);
+    if (url.pathname === '/runs') {
+      const key = url.searchParams.get('key');
+      if (!env.VIEW_KEY || key !== env.VIEW_KEY) return new Response('nope', { status: 401 });
+      const app = cut(url.searchParams.get('app'), 40) || 'armsdealer';
+      const lim = Math.min(2000, Math.max(1, num(url.searchParams.get('limit')) || 500));
+      const { results } = await env.DB.prepare('SELECT * FROM runs WHERE app = ? ORDER BY at DESC LIMIT ?').bind(app, lim).all();
+      return Response.json({ rows: results });
     }
     if (url.pathname === '/beat') {
       if (req.method !== 'POST') return new Response('post only', { status: 405 });

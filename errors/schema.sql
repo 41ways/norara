@@ -37,3 +37,23 @@ CREATE TABLE IF NOT EXISTS live (
   at  INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS live_at ON live (at);
+
+-- 한 판이 끝났을 때의 요약 — 판마다 한 줄. 판이 하루 수십 건 수준이라 쌓아도 된다.
+-- 익명: sid 는 브라우저가 만든 무작위 값. (sid, run) 이 같으면 한 번만 받는다.
+CREATE TABLE IF NOT EXISTS runs (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  at      INTEGER NOT NULL,
+  day     TEXT    NOT NULL,
+  app     TEXT    NOT NULL,
+  v       TEXT,
+  sid     TEXT    NOT NULL,
+  run     INTEGER NOT NULL DEFAULT 0,   -- 이 브라우저에서 이번이 몇 번째로 끝낸 판인지 (0 = 처음)
+  ending  TEXT    NOT NULL,
+  days    INTEGER NOT NULL,
+  gold    INTEGER NOT NULL DEFAULT 0,
+  flags   TEXT    NOT NULL DEFAULT '[]',
+  choices TEXT    NOT NULL DEFAULT '{}',
+  data    TEXT    NOT NULL DEFAULT '{}'
+);
+CREATE UNIQUE INDEX IF NOT EXISTS runs_once ON runs (sid, run, app);
+CREATE INDEX IF NOT EXISTS runs_app ON runs (app, at DESC);
