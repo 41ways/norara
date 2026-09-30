@@ -169,12 +169,22 @@ async function runPost(req, env) {
     tele: keyMap(o.tele, 150, true),  // 행동 계측 (도박장 cs_* 까지 합치면 80 에 가까워 넉넉히) — 신고·덤·인장 살핀 횟수, 결정까지 걸린 초, 플레이 초
     lat: keyMap(o.lat, 200, true),    // 대화 손님 틀별로 결정까지 걸린 초
   };
-  await env.DB.prepare(
-    'INSERT OR IGNORE INTO runs (at, day, app, v, sid, run, ending, days, gold, flags, choices, data)' +
-    ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(now, dayOf(now), app, cut(o.v, 16), sid, clampInt(o.run, 0, 99999) || 0, ending, days,
+  const run = clampInt(o.run, 0, 99999) || 0;
+  // 'quit' = 엔딩까지 못 가고 탭을 떠난 판의 중간 요약 (run 은 10000 + 끝낸 판 수). 같은 판이면 더 멀리 간 것으로 덮어쓴다
+  const quit = ending === 'quit';
+  if (quit && run < 10000) return new Response('bad quit', { status: 400 });
+  const vals = [now, dayOf(now), app, cut(o.v, 16), sid, run, ending, days,
     clampInt(o.gold, -100000, 10000000) || 0,
-    JSON.stringify(keyList(o.flags, 300)), JSON.stringify(keyMap(o.choices, 400, false)), JSON.stringify(data)).run();
+    JSON.stringify(keyList(o.flags, 300)), JSON.stringify(keyMap(o.choices, 400, false)), JSON.stringify(data)];
+  const cols = 'INSERT INTO runs (at, day, app, v, sid, run, ending, days, gold, flags, choices, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  if (quit) {
+    await env.DB.prepare(cols + ' ON CONFLICT(sid, run, app) DO UPDATE SET at = excluded.at, day = excluded.day, v = excluded.v, days = excluded.days,' +
+      ' gold = excluded.gold, flags = excluded.flags, choices = excluded.choices, data = excluded.data WHERE excluded.days >= runs.days').bind(...vals).run();
+  } else {
+    await env.DB.prepare(cols.replace('INSERT INTO', 'INSERT OR IGNORE INTO')).bind(...vals).run();
+    // 끝까지 간 판이면 그 판의 중간 요약은 지운다 (둘 다 세지 않게)
+    await env.DB.prepare("DELETE FROM runs WHERE app = ? AND sid = ? AND run = ? AND ending = 'quit'").bind(app, sid, run + 10000).run();
+  }
   return new Response('ok');
 }
 
@@ -182,18 +192,20 @@ async function runPost(req, env) {
 async function runsAgg(url, env) {
   const app = cut(url.searchParams.get('app'), 40) || 'armsdealer';
   const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then(r => r.results);
-  const [tot, endings, byRun, flags, choices, versions, daily, tele, lat] = await Promise.all([
-    q('SELECT COUNT(*) AS n, COUNT(DISTINCT sid) AS players, AVG(days) AS days, AVG(gold) AS gold, MIN(at) AS since, MAX(at) AS last FROM runs WHERE app = ?', app),
-    q('SELECT ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY ending ORDER BY n DESC', app),
-    q("SELECT CASE WHEN run <= 0 THEN '1' WHEN run = 1 OR run = 2 THEN '2-3' ELSE '4+' END AS b, ending, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY b, ending", app),
-    q('SELECT j.value AS flag, COUNT(*) AS n FROM runs, json_each(runs.flags) j WHERE app = ? GROUP BY j.value ORDER BY n DESC LIMIT 400', app),
-    q('SELECT j.key AS tpl, j.value AS action, COUNT(*) AS n FROM runs, json_each(runs.choices) j WHERE app = ? GROUP BY j.key, j.value ORDER BY n DESC LIMIT 600', app),
-    q('SELECT v, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY v ORDER BY n DESC', app),
-    q('SELECT day, COUNT(*) AS n FROM runs WHERE app = ? GROUP BY day ORDER BY day DESC LIMIT 60', app),
-    q("SELECT j.key AS k, SUM(j.value) AS s, COUNT(*) AS n FROM runs, json_each(runs.data, '$.tele') j WHERE app = ? GROUP BY j.key", app),
-    q("SELECT j.key AS tpl, AVG(j.value) AS avg, COUNT(*) AS n FROM runs, json_each(runs.data, '$.lat') j WHERE app = ? GROUP BY j.key ORDER BY n DESC LIMIT 200", app),
+  const [tot, endings, byRun, flags, choices, versions, daily, tele, lat, quits] = await Promise.all([
+    q("SELECT COUNT(*) AS n, COUNT(DISTINCT sid) AS players, AVG(days) AS days, AVG(gold) AS gold, MIN(at) AS since, MAX(at) AS last FROM runs WHERE app = ? AND ending != 'quit'", app),
+    q("SELECT ending, COUNT(*) AS n FROM runs WHERE app = ? AND ending != 'quit' GROUP BY ending ORDER BY n DESC", app),
+    q("SELECT CASE WHEN run <= 0 THEN '1' WHEN run = 1 OR run = 2 THEN '2-3' ELSE '4+' END AS b, ending, COUNT(*) AS n FROM runs WHERE app = ? AND ending != 'quit' GROUP BY b, ending", app),
+    q("SELECT j.value AS flag, COUNT(*) AS n FROM runs, json_each(runs.flags) j WHERE app = ? AND ending != 'quit' GROUP BY j.value ORDER BY n DESC LIMIT 400", app),
+    q("SELECT j.key AS tpl, j.value AS action, COUNT(*) AS n FROM runs, json_each(runs.choices) j WHERE app = ? AND ending != 'quit' GROUP BY j.key, j.value ORDER BY n DESC LIMIT 600", app),
+    q("SELECT v, COUNT(*) AS n FROM runs WHERE app = ? AND ending != 'quit' GROUP BY v ORDER BY n DESC", app),
+    q("SELECT day, COUNT(*) AS n FROM runs WHERE app = ? AND ending != 'quit' GROUP BY day ORDER BY day DESC LIMIT 60", app),
+    q("SELECT j.key AS k, SUM(j.value) AS s, COUNT(*) AS n FROM runs, json_each(runs.data, '$.tele') j WHERE app = ? AND ending != 'quit' GROUP BY j.key", app),
+    q("SELECT j.key AS tpl, AVG(j.value) AS avg, COUNT(*) AS n FROM runs, json_each(runs.data, '$.lat') j WHERE app = ? AND ending != 'quit' GROUP BY j.key ORDER BY n DESC LIMIT 200", app),
+    // 중간에 떠난 판 — 며칠째에 멈췄나
+    q("SELECT days, COUNT(*) AS n FROM runs WHERE app = ? AND ending = 'quit' GROUP BY days ORDER BY days", app),
   ]);
-  return Response.json({ app, at: Date.now(), total: tot[0] || {}, endings, byRun, flags, choices, versions, daily, tele, lat }, {
+  return Response.json({ app, at: Date.now(), total: tot[0] || {}, endings, byRun, flags, choices, versions, daily, tele, lat, quits }, {
     headers: { 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=60' },
   });
 }
