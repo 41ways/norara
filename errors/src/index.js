@@ -166,7 +166,7 @@ async function runPost(req, env) {
     })),
     sales: keyMap(o.sales, 60, true),
     shop: keyList(o.shop, 12),
-    tele: keyMap(o.tele, 80, true),   // 행동 계측 — 신고·덤·인장 살핀 횟수, 결정까지 걸린 초, 플레이 초
+    tele: keyMap(o.tele, 150, true),  // 행동 계측 (도박장 cs_* 까지 합치면 80 에 가까워 넉넉히) — 신고·덤·인장 살핀 횟수, 결정까지 걸린 초, 플레이 초
     lat: keyMap(o.lat, 200, true),    // 대화 손님 틀별로 결정까지 걸린 초
   };
   await env.DB.prepare(
