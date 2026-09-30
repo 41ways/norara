@@ -336,7 +336,7 @@ button.hot:hover{background:#ff6a45}
   }
   function lick(big) {
     if (!soundOn || !ac) return;
-    if (ac.state === "suspended") ac.resume();
+    if (ac.state === "suspended") ac.resume().catch(function () {});
     var t = ac.currentTime, dur = big ? .32 : .18;
     var s = ac.createBufferSource(); s.buffer = noise;
     var f = ac.createBiquadFilter(); f.type = "bandpass"; f.Q.value = big ? 3 : 5;
