@@ -312,8 +312,8 @@ textarea{
     [/거냐/g, ["거시냐"]],
     [/거야/g, ["거여"]],
     [/잖아/g, ["잖여"]],
-    [/([았었했])네요?$/g, function (m, a) { return a + "구먼"; }],
-    [/네요$/g, ["구먼", "구만", "네그려"]],
+    [/([았었했])네요?$/g, function (m, a) { return a + "구먼요"; }],
+    [/네요$/g, ["구먼요", "구만요"]],
     [/([가-힣])면(?=$|[\s.,!?~])/g, function (m, a) { return a + "믄"; }],
     [/([가-힣])들(?=$|[\s.,!?~])/g, function (m, a) { return a + "덜"; }]
   ];
@@ -384,8 +384,43 @@ textarea{
     return s;
   }
 
+  /* 꼰대는 존댓말 — 문장 끝 낱말의 반말 어미를 해요체·합쇼체로 */
+  function jong(ch) { var c = ch ? ch.charCodeAt(0) - 0xAC00 : -1; return c >= 0 && c < 11172 ? c % 28 : -1; }
+  function withJong(ch, j) { var c = ch.charCodeAt(0) - 0xAC00; return String.fromCharCode(0xAC00 + c - c % 28 + j); }
+  function bieup(pre) { return pre.slice(0, -1) + withJong(pre.slice(-1), 17); }   // 가 → 갑, 거 → 겁
+  var POLITE_WORD = {
+    "고마워": ["고맙습니다", "고마워요"], "미안해": ["미안합니다", "미안해요"], "그치": ["그렇지요", "그쵸"],
+    "맞지": ["맞지요", "맞죠"], "알았어": ["알겠습니다", "알았어요"], "응": ["예", "네"], "아니": ["아닙니다", "아니요"],
+    "안녕": ["안녕하십니까", "안녕하세요"], "잘가": ["살펴 가십시오"], "축하해": ["축하합니다", "축하드립니다"],
+    "뭐야": ["뭡니까", "뭐예요"], "사랑해": ["사랑합니다"], "수고해": ["수고하십시오", "수고하세요"]
+  };
+  function politeWord(w, type, R) {
+    if (/(요|니다|니까|시오|세요|죠|시다)$/.test(w)) return w;
+    if (POLITE_WORD[w]) return R.pick(POLITE_WORD[w]);
+    var last = w.slice(-1), pre = w.slice(0, -1), p = pre.slice(-1), j = jong(p);
+    if (!pre) return type === "?" || /[어아해봐]/.test(last) ? w + "요" : w;
+    if (last === "자") return j > 0 ? pre + "읍시다" : j === 0 ? bieup(pre) + "시다" : w;            // 먹자 → 먹읍시다, 가자 → 갑시다
+    if (last === "냐" || last === "니") return j > 0 ? pre + "습니까" : j === 0 ? bieup(pre) + "니까" : w; // 할거냐 → 할겁니까
+    if (last === "다" && p !== "니") {                                                              // 좋다 → 좋습니다, 한다 → 합니다
+      if (p === "는" && pre.length > 1) return pre.slice(0, -1) + "습니다";
+      if (j === 4) return bieup(pre) + "니다";
+      return j > 0 ? pre + "습니다" : j === 0 ? bieup(pre) + "니다" : w;
+    }
+    if (last === "야") return p === "거" ? pre.slice(0, -1) + "겁니다" : p === "이" ? bieup(pre) + "니다" : pre + "입니다";
+    if (last === "나" && p === "구") return pre.slice(0, -1) + "군요";
+    if (last === "해") return pre + R.pick(["해요", "합니다"]);
+    if ((last === "어" || last === "아") && j === 20) return R.p(.5) ? pre + "습니다" : w + "요";      // 했어 → 했습니다
+    if (/[지네게래걸데어아여워와봐줘돼대써러]/.test(last)) return w + "요";
+    return type === "?" ? w + "요" : w;
+  }
+  function polite(body, type, R) {
+    var m = body.match(/^([\s\S]*?)([가-힣]+)([^가-힣]*)$/);
+    return m ? m[1] + politeWord(m[2], type, R) + m[3] : body;
+  }
+
   function kSentence(body, type, R) {
     var w = K.w;
+    body = polite(body, type, R);
     body = swap(body, SWEARS, 1, R);
     body = swap(body, NAMES, .85, R);
     body = swap(body, DIALECT, w.dialect, R);
