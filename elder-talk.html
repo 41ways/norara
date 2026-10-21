@@ -110,6 +110,43 @@ textarea{
 .b98:active{border-color:#404040 #fff #fff #404040;box-shadow:inset 1px 1px #808080}
 .b98.go{color:#c00}
 
+/* 메뉴 · 시계 · 방문 횟수 */
+.twk{font-size:14px;letter-spacing:6px;margin-top:2px}
+.twk span{animation:tw 1.2s steps(1) infinite}
+.twk span:nth-child(2n){animation-delay:.6s}
+@keyframes tw{0%{color:#ff3399}50%{color:#33aaff}}
+.menu{display:flex;flex-wrap:wrap;justify-content:center;margin-top:8px;border:1px solid #6b8fc4;background:linear-gradient(#fdfdff,#dbe7f8)}
+.menu a,.menu button{
+  flex:1 1 auto;text-align:center;padding:5px 8px;font:inherit;font-size:12px;font-weight:bold;color:#1d3f80;text-decoration:none;
+  background:none;border:0;border-right:1px dotted #8fb0dd;cursor:pointer;white-space:nowrap;
+}
+.menu :last-child{border-right:0}
+.menu .cur{color:#fff;background:linear-gradient(#ff7ab6,#ff0066)}
+.menu a:hover,.menu button:hover{color:var(--hot);text-decoration:underline}
+.status{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-top:6px;font-size:12px;color:#555}
+.odo{display:inline-flex;gap:1px;vertical-align:-3px}
+.odo i{font-style:normal;font-family:"Courier New",monospace;font-weight:bold;background:#111;color:#7dff7d;padding:0 2px;border:1px solid #555;line-height:1.3}
+hr.rb{height:4px;border:0;margin:12px 0 0;background:linear-gradient(90deg,#ff3b3b,#ff9a00,#ffe600,#4cd964,#3ba0ff,#7a5cff,#ff3bd4)}
+/* 오늘의 좋은글 */
+.good{margin-top:12px;border:2px dotted #ff88bb;background:#fff7fb;padding:8px;text-align:center}
+.good .gh{font-weight:bold;color:#d6006b}
+.good p{margin:4px 0 0;font-size:15px;color:#4a2a8a;min-height:1.6em;transition:opacity .4s}
+/* 결과 옆 복사 */
+.cpy{display:flex;justify-content:flex-end;margin-top:8px}
+.b98.sm{flex:none;font-size:13px;padding:4px 12px}
+/* 공사중 · 배지 */
+.uc{margin:0 auto 8px;padding:3px 8px;font-weight:bold;color:#000;font-size:12px;
+  background:repeating-linear-gradient(45deg,#ffd400 0 10px,#222 10px 20px);}
+.uc span{background:#ffd400;padding:0 6px}
+.badges{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:8px 0 4px}
+.bd{display:inline-flex;flex-direction:column;justify-content:center;width:88px;height:31px;border:1px solid #000;
+  font:bold 9px/1.15 Verdana,Tahoma,sans-serif;text-align:center;letter-spacing:0}
+.bd b{font-size:11px}
+.b1{background:linear-gradient(#3a7bd5,#00264d);color:#ffde59}
+.b2{background:#fff;color:#000;box-shadow:inset 0 0 0 2px #c0c0c0}
+.b3{background:linear-gradient(#ff6fa8,#b3005a);color:#fff}
+.b4{background:#000;color:#00ff66}
+.mzn{margin-top:4px;color:#c00;font-size:11px}
 .foot{margin-top:14px;padding-top:10px;border-top:1px dashed #9db6dd;text-align:center;font-size:11px;color:#666;line-height:1.8}
 .foot .links{font-size:12px;color:#333}
 
@@ -132,14 +169,20 @@ textarea{
 <div class="page">
   <div class="top">
     <video src="assets/elder-talk/geongang.mp4" autoplay loop muted playsinline aria-label="건강하세요"></video>
+    <div class="twk" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span></div>
     <h1 class="word">이상한 번역기<span class="newb blink">NEW</span></h1>
     <p class="sub">아무 말이나 넣으시면 이상 하게 바꿔 드립니다~~^^<small>꼰대체 · 급식체 · MZ체</small></p>
   </div>
 
+  <nav class="menu" aria-label="메뉴">
+    <a href="#top" class="cur">HOME</a><a href="#src">번역기</a><button type="button" class="soon">방명록</button><button type="button" class="soon">사진첩</button><button type="button" class="soon">자유게시판</button><button type="button" class="soon">링크</button>
+  </nav>
+  <div class="status"><span>🕐 <span id="clock"></span></span><span>당신 의 <span class="odo" id="visits"></span> 번째 방문 입니다</span></div>
+
   <div class="box">
     <h2>▶ 하고 싶은 말 을 적어 주세요</h2>
     <div class="in">
-      <textarea id="src" rows="3" aria-label="하고 싶은 말">오늘 먹은 고기 정말 맛있었고 영화도 재미있게 봤어 고마워!</textarea>
+      <textarea id="src" rows="3" aria-label="하고 싶은 말">맘스터치에서 햄버거 먹자</textarea>
       <div class="samples" id="samples"><b>예문</b> : </div>
     </div>
   </div>
@@ -165,19 +208,28 @@ textarea{
           </div>
         </div>
       </div>
+      <div class="cpy"><button class="b98 sm" id="copy2" type="button">복사 하기</button></div>
     </div>
   </div>
 
   <div class="acts">
     <button class="b98 go" id="reroll" type="button">번역 다시 하기!</button>
-    <button class="b98" id="copy" type="button">복사 하기</button>
+  </div>
+
+  <hr class="rb">
+  <div class="good">
+    <div class="gh">🌷 오늘 의 좋은글 🌷</div>
+    <p id="goodtxt"></p>
   </div>
 
   <div class="foot">
+    <div class="uc"><span>🚧 본 홈페이지 는 영원히 공사중 입니다 🚧</span></div>
     <div class="links">[<a href="./">레드버튼 으로</a>]<span class="sep">|</span>[<a href="#" id="fav">즐겨찾기 추가</a>]<span class="sep">|</span>[<a href="#top">맨 위로</a>]</div>
     <div class="blink">♡ 방문해 주셔서 감사 합니다 ♡</div>
     <div>Copyright ⓒ 2003~2026 All Rights Reserved.</div>
+    <div class="mzn">※ MZ체 는 개발자 가 트렌드 에 뒤떨어져서 잘 모릅니다,,, 틀려도 양해 부탁 드립니다^^;</div>
     <div>본 홈페이지 는 Internet Explorer 6.0 · 1024×768 해상도 에 최적화 되어 있습니다</div>
+    <div class="badges" aria-hidden="true"><span class="bd b1">Internet<b>Explorer 6</b></span><span class="bd b2">메모장 으로<b>직접 제작</b></span><span class="bd b3">한글<b>완벽 지원</b></span><span class="bd b4">800×600<b>이상 권장</b></span></div>
   </div>
 </div>
 </div>
@@ -227,7 +279,7 @@ textarea{
       text = text.replace(n[0], function () {
         var m = arguments[0];
         if (!R.p(prob)) return m;
-        return typeof n[1] === "function" ? n[1].apply(null, arguments) : Array.isArray(n[1]) ? R.pick(n[1]) : n[1];
+        return typeof n[1] === "function" ? n[1].apply(null, [].slice.call(arguments).concat([R])) : Array.isArray(n[1]) ? R.pick(n[1]) : n[1];
       });
     });
     return text;
@@ -241,7 +293,7 @@ textarea{
   var K = {
     // 버릇의 세기(0~1)
     w: { emoji: .5, tilde: .8, dots: .7, split: .5, typo: .5, laugh: .6, sep: .85, wave: .6, dialect: .7, star: .4 },
-    laughs: ["ㅋㅋㅋ", "ㅎㅎ", "허허", "ㅋ ㅋ"],
+    laughs: ["ㅋㅋㅋ", "ㅎㅎ", "허허", "ㅋ ㅋ", "껄껄", "껄껄껄", ", ,,,ㅎㅎ", ",,,ㅎㅎ", "허허허"],
     emojis: ["🌹", "👍", "🙏", "😊", "♡", "☕", "💐", "♬"]
   };
   // 젊은 줄임말 → 풀어 쓴 말
@@ -263,7 +315,6 @@ textarea{
   ];
   // 고유명사·외래어 틀리기 (맘스터치 → 맘스치킨)
   var NAMES = [
-    [/맘스터치/g, ["맘스치킨", "맘스터치킨"]],
     [/스타벅스/g, ["별다방", "스타박스"]],
     [/맥도날드/g, ["맥도날", "맥도널드"]],
     [/버거킹/g, ["버거킹구", "버거낑"]],
@@ -278,7 +329,7 @@ textarea{
     [/배달의민족|배민/g, ["배달민족"]],
     [/다이소/g, ["다이쏘"]],
     [/햄버거/g, ["햄버가", "버거"]],
-    [/치킨/g, ["통닭"]],
+    [/(?<!맘스)치킨/g, ["통닭"]],
     [/피자/g, ["핏자"]],
     [/파스타/g, ["스파게티"]],
     [/고기/g, ["괴기"]],
@@ -409,19 +460,23 @@ textarea{
     if (last === "야") return p === "거" ? pre.slice(0, -1) + "겁니다" : p === "이" ? bieup(pre) + "니다" : pre + "입니다";
     if (last === "나" && p === "구") return pre.slice(0, -1) + "군요";
     if (last === "해") return pre + R.pick(["해요", "합니다"]);
-    if ((last === "어" || last === "아") && j === 20) return R.p(.5) ? pre + "습니다" : w + "요";      // 했어 → 했습니다
+    if ((last === "어" || last === "아") && j === 20) return R.p(.7) ? pre + "습니다" : w + "요";      // 봤어 → 봤습니다 → 봤수다
     if (/[지네게래걸데어아여워와봐줘돼대써러]/.test(last)) return w + "요";
     return type === "?" ? w + "요" : w;
   }
   function polite(body, type, R) {
     var m = body.match(/^([\s\S]*?)([가-힣]+)([^가-힣]*)$/);
-    return m ? m[1] + politeWord(m[2], type, R) + m[3] : body;
+    if (m) body = m[1] + politeWord(m[2], type, R) + m[3];
+    // 옛 맞춤법: 고맙습니다 → 고맙읍니다 / 고맙수다, 봤습니다 → 봤수다
+    return body.replace(/습니다/g, function () { return R.pick(["읍니다", "읍니다", "수다", "습니다"]); })
+               .replace(/습니까/g, function () { return R.pick(["읍니까", "읍니까", "습니까"]); });
   }
 
   function kSentence(body, type, R) {
     var w = K.w;
     body = polite(body, type, R);
     body = swap(body, SWEARS, 1, R);
+    body = body.replace(/맘스터치/g, "맘스치킨");   // 이건 늘 — 사용자 지정
     body = swap(body, NAMES, .85, R);
     body = swap(body, DIALECT, w.dialect, R);
     body = swap(body, TYPOS, w.typo, R);
@@ -453,7 +508,7 @@ textarea{
     var mode = wpick(R, [["comma", .45], ["dot", .3], ["space", .25]]);
     var out = words[0] || "";
     for (var k = 1; k < words.length; k++) {
-      var g = mode === "comma" ? (R.p(.8) ? R.pick([",,", ",,,", ",,,,"]) : " ")
+      var g = mode === "comma" ? (R.p(.8) ? R.pick([",,", ",,,", ",,,,", ", ,,", ",, ,", ", ,,,"]) : " ")
             : mode === "dot" ? (R.p(.8) ? R.pick(["..", "...", "....", "."]) : " ")
             : (R.p(.25) ? "  " : " ");
       out += g + words[k];
@@ -480,6 +535,22 @@ textarea{
   /* =====================================================================
      급식체 · MZ체 — 낱말 갈아끼우기 + 말끝 바꾸기
      ===================================================================== */
+  function adj(nouns, advs) {
+    return function (m, rest) {
+      var R = arguments[arguments.length - 1], n = R.pick(nouns);
+      rest = rest || "";
+      if (/^게/.test(rest)) return R.pick(advs) + rest.slice(1);
+      if (/^(다|어|아|네|음|지|죠)?$/.test(rest)) return n;
+      var open = jong(n.slice(-1)) === 0;
+      if (/^(어요|아요|네요|지요|습니다)$/.test(rest)) return n + (open ? "예요" : "이에요");
+      if (/^는/.test(rest)) return n + "인" + rest.slice(1);
+      if (/^[었았]/.test(rest)) return n + (open ? "였" + rest.slice(1) : "이" + rest);
+      return n + "이" + rest.replace(/^으/, "");
+    };
+  }
+  var NE = "(?![가-힣])";   // 낱말 끝
+  function fin(s) { return new RegExp("(?:" + s + ")" + NE, "g"); }
+
   var YOUTH = {
     gs: {
       id: "gs", eum: true, cute: false,
@@ -487,32 +558,43 @@ textarea{
         [/(너무|엄청|완전|매우|아주|진짜로)\s+/g, ["개", "핵"]],
         [/진짜|정말|레알/g, ["ㄹㅇ", "레알"]],
         [/생일 축하(합니다|해요|해)?/g, ["생축", "ㅅㅊ"]],
-        [/재미없[가-힣]*/g, ["노잼", "핵노잼"]],
-        [/재미있[가-힣]*|재밌[가-힣]*/g, ["꿀잼", "개꿀잼"]],
-        [/맛없[가-힣]*/g, ["노맛"]],
-        [/맛있[가-힣]*/g, ["존맛", "JMT"]],
-        [/좋(아|다|네)[가-힣]*/g, ["오진다", "개좋음", "지린다"]],
-        [/웃겨요|웃기네|웃기다|웃겨/g, ["개웃김", "핵웃김"]],
-        [/싫어요|싫다|싫어/g, ["극혐", "싫음"]],
+        [/재미없([가-힣]*)/g, adj(["노잼", "핵노잼"], ["노잼으로"])],
+        [/재밌([가-힣]*)/g, adj(["꿀잼", "개꿀잼"], ["개재밌게", "핵재밌게"])],
+        [/재미있([가-힣]*)/g, adj(["꿀잼", "개꿀잼"], ["개재밌게", "핵재밌게"])],
+        [/맛없([가-힣]*)/g, adj(["노맛"], ["개맛없게"])],
+        [/맛있([가-힣]*)/g, adj(["존맛", "JMT"], ["개맛있게", "존맛으로"])],
+        [fin("좋아요|좋네요|좋습니다|좋다|좋아|좋네"), ["오진다", "개좋음", "지린다"]],
+        [/(?<![가-힣])좋(?=[가-힣])/g, ["개좋"]],
+        [fin("웃겨요|웃기네|웃기다|웃겨"), ["개웃김", "핵웃김"]],
+        [fin("싫어요|싫습니다|싫다|싫어"), ["극혐", "싫음"]],
         [/대박/g, ["ㄷㅂ", "대박쓰"]],
         [/인정/g, ["ㅇㅈ"]],
-        [/미안(합니다|해요|해)?/g, ["ㅈㅅ", "ㅁㅇ"]],
-        [/고마워(요)?|감사(합니다|해요)?/g, ["ㄱㅅ", "ㄳ"]],
-        [/축하(합니다|해요|해)?/g, ["ㅊㅋ", "ㅊㅋㅊㅋ"]],
-        [/짜증(나요|나네|난다|나)?|화나(요|네)?/g, ["빡침", "개빡"]],
+        [fin("미안합니다|미안해요|미안해|죄송합니다|죄송해요"), ["ㅈㅅ", "ㅁㅇ"]],
+        [fin("고마워요|고마워|고맙습니다|감사합니다|감사해요|감사"), ["ㄱㅅ", "ㄳ"]],
+        [fin("수고하셨습니다|수고하셨어요|수고하세요|수고해요|수고해|수고"), ["ㅅㄱ", "ㅅㄱㅇ"]],
+        [fin("괜찮아요|괜찮습니다|괜찮아|괜찮다"), ["ㄱㅊ", "ㄱㅊㄱㅊ"]],
+        [fin("안녕하세요|안녕하십니까|안녕"), ["ㅎㅇ", "ㅎㅇㅎㅇ"]],
+        [word("아니(?:요|오)?"), ["ㄴㄴ", "ㄴㄴㄴ"]],
+        [fin("축하합니다|축하해요|축하해"), ["ㅊㅋ", "ㅊㅋㅊㅋ"]],
+        [fin("짜증나요|짜증나네|짜증난다|짜증나|짜증|화나요|화나네|화나"), ["빡침", "개빡"]],
+        [/저는/g, ["난"]], [/제가/g, ["내가"]], [/저도/g, ["나도"]], [/저희/g, ["우리"]],
+        [/드셨/g, ["먹었"]], [/하셨/g, ["했"]], [/주셔서/g, ["줘서"]],
+        [fin("주세요"), ["줘", "ㄱㄱ"]], [fin("드세요"), ["먹어", "드셈"]], [fin("하세요"), ["해", "하셈"]],
+        [/([가-힣])세요(?![가-힣])/g, function (m, a) { return a + "셈"; }],
         [/어이없/g, ["어이털리"]],
         [/그러니까/g, ["ㄱㄴㄲ"]],
         [/미친/g, ["ㅁㅊ"]],
         [word("(?:응|네|넹)"), ["ㅇㅇ"]],
         [/오케이|알겠어(요)?|알았어(요)?/g, ["ㅇㅋ", "ㅇㅋㅇㅋ"]],
         [/선생님/g, ["쌤"]],
+        [/([가-힣])님(?![가-힣])/g, function (m, a) { return a; }],
         [/친구/g, ["칭구"]],
         [/ㅋ{2,}/g, ["ㅋㅋㅋㅋㅋ", "ㅋㅋㄹㅃㅃ"]],
         [/[ㅠㅜ]{2,}/g, ["ㅠㅠ", "ㅜㅜ"]]
       ],
       swears: [[/씨발|시발/g, ["ㅅㅂ"]], [/병신/g, ["ㅂㅅ"]], [/새끼/g, ["ㅅㄲ"]], [/존나|좆나/g, ["ㅈㄴ"]], [/지랄/g, ["ㅈㄹ"]]],
-      pre: ["ㄹㅇ", "아니", "와"],
-      end: { ".": ["ㅋㅋ", "ㅋㅋㅋ", "", " ㅇㅈ?", " ㅇㅇ", " ㄹㅇ"], "?": ["??", " 실화냐?", "?ㅋㅋ"], "!": ["!!", " ㄹㅇ!!", "ㅋㅋㅋ!!"] },
+      pre: ["ㅡㅡ", "ㄹㅇ", "아"],
+      end: { ".": ["ㅇㅇ", "ㅋ", " ㅡㅡ", "ㅋㅋ", " ㅅㄱ", " ㄹㅇ", " ㅇㅇ"], "?": ["?", "?ㅡㅡ", " ㅇㅈ?", "? 실화?"], "!": ["ㅋ", "!", "ㅋㅋ"] },
       emojis: []
     },
     mz: {
@@ -523,22 +605,27 @@ textarea{
         [/생일 축하(해요|합니다|해)?/g, ["생축🎉", "생일 ㅊㅋㅊㅋ"]],
         [/최고/g, ["킹갓", "최고존엄"]],
         [/대박/g, ["대박사건", "미쳤다"]],
-        [/맛있[가-힣]*/g, ["존맛탱", "맛도리"]],
-        [/멋있(어요|다|어|네요|네)?|멋지(다|네요|네)/g, ["폼 미쳤다", "멋짐 그 잡채"]],
-        [/예뻐요|예쁘다|예쁘네|이쁘다|예뻐/g, ["예쁨 그 잡채", "얼굴 천재"]],
-        [/좋(아|다)[가-힣]*/g, ["좋아 미쳤다", "느좋", "좋아 🫶"]],
-        [/웃겨요|웃기네|웃기다|웃겨/g, ["웃겨 죽겠음ㅋㅋ", "개웃겨"]],
-        [/슬퍼요|슬프다|슬퍼/g, ["눈물버튼 🥹"]],
-        [/배고파요|배고파/g, ["배고픔 이슈"]],
+        [/맛있([가-힣]*)/g, adj(["존맛탱", "맛도리"], ["맛도리하게", "존맛탱으로"])],
+        [/재미있([가-힣]*)/g, adj(["꿀잼", "도파민 폭발"], ["찐텐으로", "도파민 터지게"])],
+        [/재밌([가-힣]*)/g, adj(["꿀잼", "도파민 폭발"], ["찐텐으로", "도파민 터지게"])],
+        [fin("멋있어요|멋있다|멋있어|멋있네요|멋있네|멋지다|멋지네요|멋지네"), ["폼 미쳤다", "멋짐 그 잡채"]],
+        [fin("예뻐요|예쁘다|예쁘네|이쁘다|예뻐"), ["예쁨 그 잡채", "얼굴 천재"]],
+        [fin("좋아요|좋습니다|좋다|좋아"), ["좋아 미쳤다", "느좋", "좋아 🫶"]],
+        [fin("웃겨요|웃기네|웃기다|웃겨"), ["웃겨 죽겠음ㅋㅋ", "개웃겨"]],
+        [fin("슬퍼요|슬프다|슬퍼"), ["눈물버튼 🥹"]],
+        [fin("배고파요|배고파"), ["배고픔 이슈"]],
+        [fin("안녕하세요"), ["안녕하세용", "하이룽"]],
+        [fin("수고하셨습니다|수고하셨어요|수고하세요"), ["수고링", "수고하셨슴다"]],
+        [fin("괜찮아요|괜찮습니다"), ["괜찮슴다", "ㄱㅊㄱㅊ"]],
         [/아이스 아메리카노/g, ["아아"]],
-        [/짜증(나요|나네|난다|나)?|화나(요|네)?/g, ["킹받네", "킹받음"]],
+        [fin("짜증나요|짜증나네|짜증난다|짜증나|화나요|화나네|화나"), ["킹받네", "킹받음"]],
         [/열심히/g, ["갓생으로"]],
         [/아무거나/g, ["알잘딱깔센으로"]],
         [/점심 메뉴 추천/g, ["점메추"]],
         [/저녁 메뉴 추천/g, ["저메추"]],
         [/월요일/g, ["월요병 이슈의 월요일"]],
-        [/피곤(해요|하다|해)?/g, ["피곤 이슈", "기빨림"]],
-        [/부러워(요)?|부럽다/g, ["개부럽", "부럽다 진심"]],
+        [fin("피곤해요|피곤하다|피곤해|피곤"), ["피곤 이슈", "기빨림"]],
+        [fin("부러워요|부러워|부럽다"), ["개부럽", "부럽다 진심"]],
         [word("(?:응|네)"), ["넵", "넹", "ㅇㅇ"]],
         [/알겠습니다|알겠어요|알았어/g, ["넵넵", "ㅇㅋㅇㅋ"]],
         [/어떡해/g, ["어떡해 🫠", "어떡하냐고"]],
@@ -573,8 +660,11 @@ textarea{
         var R = rng(seed ^ hash(st.body) ^ hash(S.id));
         var b = swap(swap(st.body, S.swears, 1, R), S.words, .85, R);
         if (S.eum) b = toEum(b);
-        if (S.cute) b = b.replace(/요$/, function (m) { return R.p(.5) ? R.pick(["용", "욥"]) : m; })
-                         .replace(/니다$/, function (m) { return R.p(.5) ? "니당" : m; });
+        if (S.cute) b = b.replace(/습니다$/, function () { return R.pick(["슨", "슴다", "스"]); })
+                         .replace(/습니까$/, "슴까")
+                         .replace(/([가-힣])니다$/, function (m, a) { return jong(a) === 17 ? withJong(a, 16) + "다" : m; })
+                         .replace(/([가-힣])니까$/, function (m, a) { return jong(a) === 17 ? withJong(a, 16) + "까" : m; })
+                         .replace(/요$/, function () { return R.pick(["용", "욥", "여", "요"]); });
         if (S.emojis.length && R.p(.3)) {
           var ws = b.split(" ");
           if (ws.length > 2) { var at = R.int(0, ws.length - 2); ws[at] += R.pick(S.emojis); b = ws.join(" "); }
@@ -613,8 +703,8 @@ textarea{
     $("style").appendChild(lb);
   });
 
-  ["오늘 먹은 고기 정말 맛있었고 영화도 재미있게 봤어 고마워!", "선생님, 시간되면 연락할게요.", "맘스터치에서 햄버거 먹자!",
-   "무더위에 콜라 마시니까 정말 좋다 그치?", "팀장님 오늘 한건 했네요!", "점심 맛있게 먹었어? 나는 피곤해 ㅠㅠ"].forEach(function (t, i) {
+  ["맘스터치에서 햄버거 먹자", "오늘 먹은 고기 정말 맛있었고 영화도 재미있게 봤어 고마워!", "선생님, 시간되면 연락할게요.",
+   "무더위에 콜라 마시니까 정말 좋다 그치?", "팀장님 오늘 한건 했네요!", "점심 맛있게 드셨나요? 저는 피곤해요 ㅠㅠ"].forEach(function (t, i) {
     if (i) { var sp = document.createElement("span"); sp.className = "sep"; sp.textContent = "|"; $("samples").appendChild(sp); }
     var bt = document.createElement("button");
     bt.type = "button"; bt.className = "lnk"; bt.textContent = t;
@@ -667,7 +757,7 @@ textarea{
     clearTimeout(toast.t);
     toast.t = setTimeout(function () { el.classList.remove("on"); }, 1600);
   }
-  $("copy").addEventListener("click", function () {
+  function doCopy() {
     var text = plain;
     used();
     function fallback() {
@@ -683,7 +773,39 @@ textarea{
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () { toast("복사 했어요~~^^"); }, fallback);
     } else fallback();
+  }
+  $("copy2").addEventListener("click", doCopy);
+
+  [].forEach.call(document.querySelectorAll(".menu .soon"), function (b) {
+    b.addEventListener("click", function () { toast("🚧 공사중 입니다^^; 빠른 시일 내에 오픈 하겠읍니다"); });
   });
+
+  function tick() {
+    var n = new Date(), h = n.getHours(), p = function (x) { return String(x).padStart(2, "0"); };
+    $("clock").textContent = n.getFullYear() + "년 " + (n.getMonth() + 1) + "월 " + n.getDate() + "일 (" + "일월화수목금토"[n.getDay()] + ") "
+      + (h < 12 ? "오전 " : "오후 ") + ((h % 12) || 12) + ":" + p(n.getMinutes()) + ":" + p(n.getSeconds());
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // 이 브라우저에서 몇 번째 왔는지 — 남과 나누지 않는 내 횟수
+  var visits = (parseInt(store.get("visits"), 10) || 0) + 1;
+  store.set("visits", visits);
+  String(visits).padStart(6, "0").split("").forEach(function (d) {
+    var i = document.createElement("i");
+    i.textContent = d;
+    $("visits").appendChild(i);
+  });
+
+  var GOOD = ["웃으면 복이 와요^^", "건강 이 최고 입니다", "오늘 이 남은 날 중 가장 젊은 날 입니다", "행복 은 멀리 있지 않읍니다",
+    "천천히 가도 늦지 않읍니다", "작은 친절 이 큰 기쁨 을 만듭니다", "좋은 친구 는 보약 보다 낫습니다"];
+  var gi = Math.floor(Math.random() * GOOD.length);
+  $("goodtxt").textContent = "\u201C " + GOOD[gi] + " \u201D";
+  setInterval(function () {
+    var el = $("goodtxt");
+    el.style.opacity = 0;
+    setTimeout(function () { gi = (gi + 1) % GOOD.length; el.textContent = "\u201C " + GOOD[gi] + " \u201D"; el.style.opacity = 1; }, 400);
+  }, 5000);
   $("fav").addEventListener("click", function (e) {
     e.preventDefault();
     toast((/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘+D" : "Ctrl+D") + " 를 눌러 주세요~~^^");
