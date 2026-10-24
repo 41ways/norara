@@ -341,7 +341,9 @@ a:focus-visible,.redbtn:focus-visible{
      data-short 를 주면 표지에는 그 짧은 이름만 얹는다(사진 카드처럼 그림을 가리기 싫을 때) -->
 <div class="list" id="source">
 
-  <!-- data-rec: 추천 선반에 오르는 순서(작을수록 앞). 없으면 추천에 안 나온다 -->
+  <!-- data-rec: 추천 선반에 오르는 순서(작을수록 앞). 없으면 추천에 안 나온다
+       규칙: 추천은 늘 8개. 새 게임을 올리면 data-rec="1" + NEW 표시를 주고, 다른 카드의 NEW는 떼고,
+       나머지 추천 순서를 한 칸씩 뒤로 미룬 뒤 9번째가 된 카드의 data-rec 를 지운다 -->
   <article data-glyph="🤥" data-cat="멀티" data-rec="1" style="--gc:#2a1570;--gc2:#ffc928" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🤥</span>
@@ -472,7 +474,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="✏️" data-cat="멀티 보드게임" data-rec="11" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
+  <article data-glyph="✏️" data-cat="멀티 보드게임" style="--gc:#7a4a8c;--gc2:#e0b64a" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">✏️</span>
       <span class="name">텔레스트레이션</span>
@@ -498,7 +500,7 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="📝" data-cat="멀티" data-rec="10" style="--gc:#d0543a;--gc2:#2b2622" class="card">
+  <article data-glyph="📝" data-cat="멀티" style="--gc:#d0543a;--gc2:#2b2622" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">📝</span>
       <span class="name">끝말잇기</span>
