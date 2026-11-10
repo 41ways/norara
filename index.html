@@ -967,16 +967,30 @@ a:focus-visible,.redbtn:focus-visible{
   function showEmpty() {
     $("chatLog").innerHTML = '<p class="chat-empty">아직 아무 말도 없음<br>먼저 한마디 남겨두면 됨 · 오늘 남긴 말은 자정까지 보임</p>';
   }
+  /* 채팅: 위로 올려 읽는 중이면 새 글이 와도 끌어내리지 않는다 (전 게임 공통) */
+  function chatAtEnd(log) { return !log.clientHeight || log.scrollHeight - log.scrollTop - log.clientHeight < 48; }
+  function chatFollow(log, atEnd, mine) {
+    var more = log.querySelector('.chat-more');
+    if (atEnd || mine) { if (more) more.remove(); log.scrollTop = log.scrollHeight; return; }
+    if (!more) {
+      more = document.createElement('button'); more.type = 'button'; more.className = 'chat-more'; more.textContent = '↓ 새 메시지';
+      more.style.cssText = 'position:sticky;bottom:6px;display:block;width:max-content;margin:4px auto 0;padding:4px 12px;border:0;border-radius:4px;background:rgba(0,0,0,.72);color:#fff;font:inherit;font-size:12.5px;line-height:1.4;cursor:pointer;z-index:2;flex:none;align-self:center';
+      more.onclick = function () { log.scrollTop = log.scrollHeight; };
+    }
+    log.appendChild(more); // 늘 맨 끝에
+    if (!log._chatMoreWatch) { log._chatMoreWatch = true; log.addEventListener('scroll', function () { var m = log.querySelector('.chat-more'); if (m && chatAtEnd(log)) m.remove(); }); }
+  }
   function add(m) {
     var log = $("chatLog");
     var empty = log.querySelector(".chat-empty");
     if (empty) empty.remove();
+    var atEnd = chatAtEnd(log);
     var p = document.createElement("p");
     p.className = "chat-msg" + (m.mine ? " mine" : "");
     p.innerHTML = "<b>" + esc(m.name) + "</b>" + esc(m.text) + "<time>" + hhmm(m.at) + "</time>";
     log.appendChild(p);
     while (log.children.length > 60) log.removeChild(log.firstChild);
-    log.scrollTop = log.scrollHeight;
+    chatFollow(log, atEnd, m.mine);
     lastAt = Math.max(lastAt, m.at);
     if (isOpen()) markSeen();
     else if (!m.mine && m.at > seenAt) $("chatDot").hidden = false;
