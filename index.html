@@ -349,9 +349,21 @@ a:focus-visible,.redbtn:focus-visible{
 <div class="list" id="source">
 
   <!-- data-rec: 추천 선반에 오르는 순서(작을수록 앞). 없으면 추천에 안 나온다
-       규칙: 추천은 늘 8개. 새 게임을 올리면 data-rec="2" + NEW 표시를 주고, 다른 카드의 NEW는 떼고,
+       규칙: 추천은 늘 8개. 새 게임을 올리면 data-rec="1" + NEW 표시를 주고(NEW가 맨 앞), 다른 카드의 NEW는 떼고,
        나머지 추천 순서를 한 칸씩 뒤로 미룬 뒤 9번째가 된 카드의 data-rec 를 지운다 -->
-  <article data-glyph="🪑" data-cat="싱글 멀티" data-rec="1" style="--gc:#de5435;--gc2:#e3e7e0" class="card">
+  <article data-glyph="🪑" data-cat="싱글 멀티" data-rec="1" style="--gc:#3c6db0;--gc2:#e7ece5" class="card">
+    <div class="head">
+      <span class="glyph" aria-hidden="true">🪑</span>
+      <span class="name">의자 쌓기 3D</span><span class="new">NEW</span>
+      <span class="tags"><span class="tag">물리</span><span class="tag">3D</span><span class="tag">쌓기</span><span class="tag">1–4인</span></span>
+    </div>
+    <p class="desc">의자를 하나씩 들어 탑 위 빈자리에 얹는 3D 물리 게임. 돌리고 눕혀서 구석구석 끼워 넣고, 하나라도 떨어지면 끝. 한 화면에서 2~4명이 번갈아 쌓을 수도 있어요.</p>
+    <div class="acts">
+      <a class="btn play" href="https://chair-stack-3d.41ways.workers.dev/" target="_blank" rel="noopener noreferrer" data-ev="chair-stack-3d-플레이">플레이</a>
+      <a class="btn" href="https://github.com/41ways/chair-stack-3d" data-ev="chair-stack-3d-코드">코드</a>
+    </div>
+  </article>
+  <article data-glyph="🪑" data-cat="싱글 멀티" data-rec="2" style="--gc:#de5435;--gc2:#e3e7e0" class="card">
     <div class="head">
       <span class="glyph" aria-hidden="true">🪑</span>
       <span class="name">의자 쌓기</span>
@@ -364,18 +376,6 @@ a:focus-visible,.redbtn:focus-visible{
     </div>
   </article>
 
-  <article data-glyph="🪑" data-cat="싱글 멀티" data-rec="2" style="--gc:#3c6db0;--gc2:#e7ece5" class="card">
-    <div class="head">
-      <span class="glyph" aria-hidden="true">🪑</span>
-      <span class="name">의자 쌓기 3D</span><span class="new">NEW</span>
-      <span class="tags"><span class="tag">물리</span><span class="tag">3D</span><span class="tag">쌓기</span><span class="tag">1–4인</span></span>
-    </div>
-    <p class="desc">의자를 하나씩 들어 탑 위 빈자리에 얹는 3D 물리 게임. 돌리고 눕혀서 구석구석 끼워 넣고, 하나라도 떨어지면 끝. 한 화면에서 2~4명이 번갈아 쌓을 수도 있어요.</p>
-    <div class="acts">
-      <a class="btn play" href="https://chair-stack-3d.41ways.workers.dev/" target="_blank" rel="noopener noreferrer" data-ev="chair-stack-3d-플레이">플레이</a>
-      <a class="btn" href="https://github.com/41ways/chair-stack-3d" data-ev="chair-stack-3d-코드">코드</a>
-    </div>
-  </article>
 
   <article data-glyph="⚽" data-cat="싱글" data-rec="3" style="--gc:#0b3d2e;--gc2:#e3bf6a" class="card">
     <div class="head">
